@@ -1,5 +1,5 @@
-FROM python:3.10
-
+FROM python:3
+WORKDIR /app
+COPY requirements.txt .
 RUN pip install --upgrade pip
-ADD requirments.txt /
-RUN pip install -r /requirments.txt
+RUN pip install --no-cache-dir -r requirements.txt

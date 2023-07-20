@@ -1,9 +1,19 @@
 {
-	"name": "Python Sample",
-	// Dockerfileでイメージ・コンテナを作成
-	"dockerFile": "../Dockerfile",
-	// リモート先のVS Codeにインストールする拡張機能
+	"name": "Python Development",
+	"dockerComposeFile": "../docker-compose.yml",
+	"service": "python",
+	"workspaceFolder": "/app",
 	"extensions": [
-		"ms-python.python"
+	  "ms-python.python"
 	],
-}
+	"settings": {
+	  "terminal.integrated.shell.linux": "/bin/bash"
+	},
+	"containerEnv": {
+	  "devcontainer.localFolder": "${localWorkspaceFolder}",
+	  "devcontainer.configFile": "${localWorkspaceFolder}/.devcontainer/devcontainer.json"
+	},
+	"mounts": [
+	  "source=${localWorkspaceFolder},target=/vscode,type=bind,consistency=cached"
+	]
+  }

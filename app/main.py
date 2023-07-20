@@ -22,9 +22,9 @@ from get_tachibana_api import ClassTachibanaAccount, func_login, func_get_stock_
 
 URL_BASE = "https://demo-kabuka.e-shiten.jp/e_api_v4r3/"
 
-MY_USERID = "fps04170"  # 自分のユーザーIDに変更してください
-MY_PASSWORD = "1997805d"  # 自分のパスワードに変更してください
-MY_PASSWORD2 = "1381"  # 自分の第2パスワードに変更してください
+MY_USERID = ""  # 自分のユーザーIDに変更してください
+MY_PASSWORD = ""  # 自分のパスワードに変更してください
+MY_PASSWORD2 = ""  # 自分の第2パスワードに変更してください
 
 CODE_LIST = ["5240", "9227", "3697", "5129"]
 
@@ -51,8 +51,9 @@ CODE_LIST = ["5240", "9227", "3697", "5129"]
 #             conn.commit()  # データベースの変更をコミット
 #             # ロングポーリングを行う非同期関数
 
-async def func_get_api_and_isert_db(tachibana_account, code_list, client ):
-    responce_json = func_get_stock_data(tachibana_account, code_list, client )
+
+async def func_get_api_and_isert_db(tachibana_account, code_list, client):
+    responce_json = func_get_stock_data(tachibana_account, code_list, client)
 
 
 async def func_insert_roop(tachibana_account):
@@ -127,4 +128,3 @@ json_response = func_login(tachibana_account)  # ログイン処理を実施
 
 
 # %%
-
