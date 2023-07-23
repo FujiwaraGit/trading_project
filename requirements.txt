@@ -1,7 +1,19 @@
-requests==2.26.0
-pytz==2021.3
-aiohttp
-httpx==0.19.0
-flake8==3.9.2
+# Python packages with their versions
+# Web framework for building web applications
 django==3.2.6
+# HTTP library for making requests
+requests==2.26.0
+# Asynchronous HTTP client/server framework
+aiohttp==3.8.5
+# Asynchronous HTTP client
+httpx==0.19.0
+# PostgreSQL adapter for Python
 psycopg2==2.9.1
+# Library for working with time zones
+pytz==2021.3
+# Tool for checking Python code against coding standards
+flake8==3.9.2
+# Interactive computing environment for Python
+jupyter==1.0.0
+
+numpy
