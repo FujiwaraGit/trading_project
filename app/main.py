@@ -13,6 +13,7 @@ CODE_LISTに取得したい株式の銘柄コードをリストとして追加�
 応答データはJSON形式で返されます。
 ログインに成功した場合、応答データには取得した株式データが含まれます。
 """
+import os
 import asyncio
 import aiohttp
 import httpx
@@ -22,9 +23,10 @@ from get_tachibana_api import ClassTachibanaAccount, func_login, func_get_stock_
 
 URL_BASE = "https://demo-kabuka.e-shiten.jp/e_api_v4r3/"
 
-MY_USERID = ""  # 自分のユーザーIDに変更してください
-MY_PASSWORD = ""  # 自分のパスワードに変更してください
-MY_PASSWORD2 = ""  # 自分の第2パスワードに変更してください
+MY_USERID = os.environ.get('TACHIBANA_USERID')
+MY_PASSWORD = os.environ.get('TACHIBANA_PASSWORD')
+MY_PASSWORD2 = os.environ.get('TACHIBANA_PASSWORD2')
+
 
 CODE_LIST = ["5240", "9227", "3697", "5129"]
 

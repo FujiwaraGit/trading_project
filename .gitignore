@@ -22,3 +22,6 @@ venv/
 
 # .DS_Store files
 .DS_Store
+
+# environment val
+.env

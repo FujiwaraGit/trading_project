@@ -29,6 +29,5 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql   # 初期化スクリプトをマウントして初期化時に実行
     ports:
       - "5432:5432" # ポート5432を公開
-    # command: psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -d "$POSTGRES_DB" -U "$POSTGRES_USER" -f /docker-entrypoint-initdb.d/init.sql
 volumes:
   postgres_data:   # PostgreSQLのデータボリューム
