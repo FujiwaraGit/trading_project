@@ -9,10 +9,14 @@ trading_project
 ├── Dockerfile
 ├── README.md
 ├── app
+│   ├── database.db
+│   ├── get_tachibana_api.py
+│   ├── insert_stock_data.py
 │   ├── main.py
-├── main.py
-├── data
+│   ├── test.py
+│   └── utility.py
 ├── docker-compose.yml
+├── init.sql
 ├── postgres_data
 └── requirements.txt
 

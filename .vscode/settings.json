@@ -1,0 +1,21 @@
+{
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        },
+        "editor.defaultFormatter": "ms-python.autopep8",
+    },
+    "python.formatting.provider": "none",
+    "python.linting.enabled": true,
+    "python.linting.lintOnSave": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Args": [
+        "--max-line-length=150",
+        "--ignore=E203,W503,W504",
+        "--config=${workspaceFolder}/.flake8"
+    ],
+    "editor.formatOnType": true,
+    "files.autoSave": "onFocusChange",
+    "editor.defaultFormatter": "mikoz.black-py",
+}
