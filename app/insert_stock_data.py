@@ -1,4 +1,4 @@
-#%%
+# %%
 import asyncio
 import aiohttp
 import sqlite3
@@ -8,6 +8,7 @@ from datetime import datetime
 conn = sqlite3.connect('database.db')
 cursor = conn.cursor()
 cursor.execute('CREATE TABLE IF NOT EXISTS data (timestamp TEXT, value INTEGER)')
+
 
 # APIからデータを非同期に取得してDBに格納する関数
 async def fetch_data(session, url):

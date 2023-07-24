@@ -20,7 +20,6 @@ import pytz
 import urllib3
 
 
-
 class ClassTachibanaAccount:
     """
     立花証券口座クラス
@@ -150,7 +149,7 @@ def func_make_url_request(auth_flg, url_target, tachibana_account, req_item_list
 
     for item in req_item_list:
         if len(item["key"]) > 0:
-            work_url += item["key"] + ":" + func_check_json_dquat(str(item["value"]) )+ ","
+            work_url += item["key"] + ":" + func_check_json_dquat(str(item["value"])) + ","
     work_url = work_url[:-2] + '"}'
     return work_url
 
@@ -228,11 +227,11 @@ async def func_get_stock_data(tachibana_account, code_list, client):
         False, tachibana_account.request_url, tachibana_account, req_item_list
     )
 
-    print(work_url)
-
     response = await client.get(work_url)
     response.raise_for_status()  # ステータスコードがエラーであれば例外を発生させる
     data = response.content
     json_data = json.loads(data.decode("shift-jis", errors="ignore"))
 
     return json_data
+
+# %%

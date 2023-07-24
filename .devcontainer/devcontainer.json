@@ -9,7 +9,16 @@
 	  "flake8.flake8"
 	],
 	"settings": {
-	  "terminal.integrated.shell.linux": "/bin/bash"
+	  "terminal.integrated.shell.linux": "/bin/bash",
+	  "python.linting.enabled": true,
+	  "python.linting.lintOnSave": true,
+	  "python.linting.pylintEnabled": false,
+	  "python.linting.flake8Enabled": true,
+	  "python.linting.flake8Args": [
+		"--max-line-length=150",
+		"--ignore=E203,W503,W504"
+	  ],
+	  "python.formatting.provider": "autopep8"
 	},
 	"containerEnv": {
 	  "devcontainer.localFolder": "${localWorkspaceFolder}",

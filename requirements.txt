@@ -1,19 +1,35 @@
-# Python packages with their versions
-# Web framework for building web applications
+# Webアプリケーションを構築するためのWebフレームワーク
 django==3.2.6
-# HTTP library for making requests
+
+# HTTPライブラリ
+# 同期リクエストを行うためのライブラリ
 requests==2.26.0
-# Asynchronous HTTP client/server framework
-aiohttp==3.8.5
-# Asynchronous HTTP client
+# 非同期リクエストを行うためのライブラリ
 httpx==0.19.0
-# PostgreSQL adapter for Python
+
+# 非同期HTTPクライアント/サーバーフレームワーク
+aiohttp==3.8.5
+
+# データベースアダプタ
 psycopg2==2.9.1
-# Library for working with time zones
+psycopg2-binary==2.9.1
+
+# タイムゾーンを扱うためのライブラリ
 pytz==2021.3
-# Tool for checking Python code against coding standards
+
+# コード品質チェック用のツール
 flake8==3.9.2
-# Interactive computing environment for Python
+
+# Pythonの対話的コンピューティング環境
 jupyter==1.0.0
 
-numpy
+# Pythonコードを自動的にPEP 8に従ってフォーマットするためのツール
+autopep8==1.5.7
+
+# 数値計算ライブラリ
+# 数値演算、配列操作、数学関数に使用
+numpy==1.25.1
+
+# データ操作ライブラリ
+# データ分析、クリーニング、変換に使用
+pandas==2.0.3
