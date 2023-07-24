@@ -11,6 +11,9 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PORT=${POSTGRES_PORT}
+      - TACHIBANA_USERID=${TACHIBANA_USERID}
+      - TACHIBANA_PASSWORD=${TACHIBANA_PASSWORD}
+      - TACHIBANA_PASSWORD2=${TACHIBANA_PASSWORD2}
       - TZ=Asia/Tokyo
     depends_on:
       - db   # コンテナ起動前にdbサービスが起動するのを待機

@@ -51,7 +51,7 @@ class ClassTachibanaAccount:
             password_sec (str): 第2パスワード
         """
         self.int_p_no = 0  # request通番
-        self.json_fmt = "5"
+        self.json_fmt = json_fmt
         self.url_base = url_base
         self.user_id = user_id
         self.password = password
