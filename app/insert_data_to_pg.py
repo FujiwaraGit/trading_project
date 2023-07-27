@@ -1,4 +1,5 @@
 import psycopg2
+from utility import convert_empty_string_to_none
 
 
 def func_insert_stock_data_into_table(table_data, conn):
@@ -15,7 +16,7 @@ def func_insert_stock_data_into_table(table_data, conn):
     Returns:
     dict: 取得した株価データの辞書型
     """
-    # テーブルにデータをINSERTするSQLクエリ
+
     insert_query = """
         INSERT INTO ita_table (
             code, pdpp, pdv, pprp, pdop, pdhp, pdlp, pvwap, pqap, pqas, pqbp, pqbs, paav, pabv,
@@ -25,13 +26,13 @@ def func_insert_stock_data_into_table(table_data, conn):
             pgbv6, pgbv5, pgbv4, pgbv3, pgbv2, pgbv1
         )
         VALUES (
-            %(code)s, %(pdpp)s, %(pdv)s, %(pprp)s, %(pdop)s, %(pdhp)s, %(pdlp)s, %(pvwap)s, %(pqap)s,
-            %(pqas)s, %(pqbp)s, %(pqbs)s, %(paav)s, %(pabv)s, %(pqov)s, %(pquv)s, %(pgap10)s, %(pgap9)s,
-            %(pgap8)s, %(pgap7)s, %(pgap6)s, %(pgap5)s, %(pgap4)s, %(pgap3)s, %(pgap2)s, %(pgap1)s,
-            %(pgbp10)s, %(pgbp9)s, %(pgbp8)s, %(pgbp7)s, %(pgbp6)s, %(pgbp5)s, %(pgbp4)s, %(pgbp3)s,
-            %(pgbp2)s, %(pgbp1)s, %(pgav10)s, %(pgav9)s, %(pgav8)s, %(pgav7)s, %(pgav6)s, %(pgav5)s,
-            %(pgav4)s, %(pgav3)s, %(pgav2)s, %(pgav1)s, %(pgbv10)s, %(pgbv9)s, %(pgbv8)s, %(pgbv7)s,
-            %(pgbv6)s, %(pgbv5)s, %(pgbv4)s, %(pgbv3)s, %(pgbv2)s, %(pgbv1)s
+            %(sIssueCode)s, %(pDPP)s, %(pDV)s, %(pPRP)s, %(pDOP)s, %(pDHP)s, %(pDLP)s, %(pVWAP)s, %(pQAP)s,
+            %(pQAS)s, %(pQBP)s, %(pQBS)s, %(pAAV)s, %(pABV)s, %(pQOV)s, %(pQUV)s, %(pGAP10)s, %(pGAP9)s,
+            %(pGAP8)s, %(pGAP7)s, %(pGAP6)s, %(pGAP5)s, %(pGAP4)s, %(pGAP3)s, %(pGAP2)s, %(pGAP1)s,
+            %(pGBP10)s, %(pGBP9)s, %(pGBP8)s, %(pGBP7)s, %(pGBP6)s, %(pGBP5)s, %(pGBP4)s, %(pGBP3)s,
+            %(pGBP2)s, %(pGBP1)s, %(pGAV10)s, %(pGAV9)s, %(pGAV8)s, %(pGAV7)s, %(pGAV6)s, %(pGAV5)s,
+            %(pGAV4)s, %(pGAV3)s, %(pGAV2)s, %(pGAV1)s, %(pGBV10)s, %(pGBV9)s, %(pGBV8)s, %(pGBV7)s,
+            %(pGBV6)s, %(pGBV5)s, %(pGBV4)s, %(pGBV3)s, %(pGBV2)s, %(pGBV1)s
         )
     """
 
@@ -39,9 +40,12 @@ def func_insert_stock_data_into_table(table_data, conn):
         with conn.cursor() as cursor:
             # table_dataのデータをita_tableに一括INSERT
             for item in table_data["aCLMMfdsMarketPrice"]:
-                cursor.execute(insert_query, item)
+                insert_item = convert_empty_string_to_none(item)
+                cursor.execute(insert_query, insert_item)
             conn.commit()
             print("Data inserted successfully into ita_table.")
     except (Exception, psycopg2.DatabaseError) as error:
         print("Error:", error)
         conn.rollback()
+
+# %%

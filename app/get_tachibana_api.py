@@ -181,8 +181,6 @@ def func_login(tachibana_account):
         True, tachibana_account.url_base, tachibana_account, req_item_list
     )
 
-    print(work_url)
-
     req = http.request("GET", work_url)
     bytes_reqdata = req.data
     str_shiftjis = bytes_reqdata.decode("shift-jis", errors="ignore")
@@ -269,4 +267,7 @@ def func_login_and_get_account_instance():
         price_url=json_response.get("sUrlPrice"),
     )
 
+    print("login_sucsess")
     return tachibana_account
+
+# %%

@@ -29,44 +29,6 @@ db_params = {
     "password": os.environ.get("POSTGRES_PASSWORD"),
 }
 
-# %%
-# async def fetch_data(session, url):
-#     """
-#     APIからデータを非同期に取得してDBに格納する関数
-
-#     Args:
-#         session (aiohttp.ClientSession): Aiohttpのクライアントセッション
-#         url (str): データを提供するAPIのエンドポイント
-
-#     Returns:
-#         None
-#     """
-#     async with session.get(url) as response:
-#         if response.status == 200:
-#             data = await response.json()  # レスポンスからJSONデータを取得
-#             timestamp = datetime.now().isoformat()  # 現在のタイムスタンプを取得
-#             value = data['value']  # データから必要な値を抽出
-#             cursor.execute('INSERT INTO data (timestamp, value) VALUES (?, ?)', (timestamp, value))  # データをデータベースに挿入
-
-
-# def func_insert_roop(tachibana_account):
-#     """
-#     ロングポーリングを行う非同期関数
-
-#     Returns:
-#         None
-#     """
-#     while True:
-#         start_time = asyncio.get_event_loop().time()  # ループの開始時刻を取得
-#         async with httpx.AsyncClient() as client:  # 非同期セッションを作成
-#             await asyncio.wait_for(
-#                 func_get_api_and_isert_db(tachibana_account, CODE_LIST, client),
-#                 timeout=0.125,
-#             )  # 0.125秒でタイムアウト
-#             elapsed_time = asyncio.get_event_loop().time() - start_time  # 処理時間を計測
-#             if elapsed_time < 0.125:
-#                 await asyncio.sleep(0.125 - elapsed_time)  # 残りの時間をウェイトで待機
-
 
 def main():
     """
@@ -90,7 +52,7 @@ def main():
     try:
         connection = psycopg2.connect(**db_params)
         # データをinsert
-        func_insert_stock_data_into_table(db_params, return_json, connection)
+        func_insert_stock_data_into_table(return_json, connection)
     except (Exception, psycopg2.Error) as error:
         print("Error while connecting to PostgreSQL:", error)
     finally:
