@@ -18,6 +18,7 @@ import datetime
 import json
 import pytz
 import urllib3
+import os
 
 
 class ClassTachibanaAccount:
@@ -211,9 +212,9 @@ def func_get_stock_data(tachibana_account, code_list):
                 # 現値,出来高,前日終値,始値,高値,安値,VWAP
                 "pDPP,pDV,pPRP,pDOP,pDHP,pDLP,pVWAP,"
                 # 売気配値,売気配値種,買気配値,買気配値種
-                "pQAP,pQAS,pQBP,pQBS"
+                "pQAP,pQAS,pQBP,pQBS,"
                 # 成売,成買,OVER,UNDER"
-                "pAAV,pABV,pQOV,pQUV"
+                "pAAV,pABV,pQOV,pQUV,"
                 # 売値10,売値9,売値8,売値7,売値6,売値5,売値4,売値3,売値2,売値1
                 "pGAP10,pGAP9,pGAP8,pGAP7,pGAP6,pGAP5,pGAP4,pGAP3,pGAP2,pGAP1,"
                 # 買値10,買値9,買値8,買値7,買値6,買値5,買値4,買値3,買値2,買値1
@@ -235,32 +236,29 @@ def func_get_stock_data(tachibana_account, code_list):
     bytes_reqdata = req.data
     str_shiftjis = bytes_reqdata.decode("shift-jis", errors="ignore")
     json_req = json.loads(str_shiftjis)
+
     return json_req
 
 
-def func_get_stock_price_json(url_base, user_id, password, password2, code_list):
-    """
-    立花証券のAPIを使用して、指定された銘柄コードの株価データをJSON形式で取得する関数
+def func_login_and_get_account_instance():
+    URL_BASE = "https://demo-kabuka.e-shiten.jp/e_api_v4r3/"
+    MY_USERID = os.environ.get('TACHIBANA_USERID')
+    MY_PASSWORD = os.environ.get('TACHIBANA_PASSWORD')
+    MY_PASSWORD2 = os.environ.get('TACHIBANA_PASSWORD2')
 
-    Args:
-        url_base (str): 立花証券のAPIのベースURL
-        user_id (str): ユーザーID
-        password (str): パスワード
-        password2 (str): 第2パスワード
-        code_list (list): 株価データを取得する銘柄コードのリスト
-
-    Returns:
-        json: 取得した株価データの辞書型
-    """
     tachibana_account = ClassTachibanaAccount(
-        json_fmt='"4"',  # 4に固定しないとエラー
-        url_base=url_base,
-        user_id=user_id,
-        password=password,
-        password_sec=password2,
+        json_fmt='"4"',
+        url_base=URL_BASE,
+        user_id=MY_USERID,
+        password=MY_PASSWORD,
+        password_sec=MY_PASSWORD2,
     )  # 立花証券口座インスタンス
 
     json_response = func_login(tachibana_account)  # ログイン処理を実施
+
+    # ログインエラーの場合
+    if not (int(json_response.get("p_errno")) == 0 and len(json_response.get("sUrlEvent")) > 0):
+        return None
 
     # 取得した値を口座属性クラスに設定
     tachibana_account.set_property(
@@ -271,6 +269,4 @@ def func_get_stock_price_json(url_base, user_id, password, password2, code_list)
         price_url=json_response.get("sUrlPrice"),
     )
 
-    return_json = func_get_stock_data(tachibana_account, code_list)
-
-    return return_json
+    return tachibana_account

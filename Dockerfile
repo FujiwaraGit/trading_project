@@ -13,6 +13,9 @@ RUN pip install --upgrade pip
 # requirements.txtに記載されたPythonの依存パッケージをインストール
 RUN pip install --no-cache-dir -r requirements.txt
 
+#pycong2を別途インストール
+RUN pip install psycopg2
+
 # PostgreSQLクライアントとlibpq-devをインストール
 RUN apt-get update \
     && apt-get install -y postgresql-client libpq-dev

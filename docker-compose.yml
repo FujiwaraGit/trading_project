@@ -14,6 +14,7 @@ services:
       - TACHIBANA_USERID=${TACHIBANA_USERID}
       - TACHIBANA_PASSWORD=${TACHIBANA_PASSWORD}
       - TACHIBANA_PASSWORD2=${TACHIBANA_PASSWORD2}
+      - TACHIBANA_URL_BASE=${TACHIBANA_URL_BASE}
       - TZ=Asia/Tokyo
     depends_on:
       - db   # コンテナ起動前にdbサービスが起動するのを待機
