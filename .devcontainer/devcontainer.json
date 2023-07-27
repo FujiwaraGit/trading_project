@@ -4,9 +4,10 @@
 	"service": "python",
 	"workspaceFolder": "/app",
 	"extensions": [
-	  "ms-python.python",
-	  "ms-toolsai.jupyter",
-	  "flake8.flake8"
+		"ms-python.python",
+		"ms-toolsai.jupyter",
+		"flake8.flake8",
+		"ckolkman.vscode-postgres"
 	],
 	"settings": {
 	  "terminal.integrated.shell.linux": "/bin/bash",

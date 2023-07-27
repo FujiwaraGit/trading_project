@@ -39,9 +39,8 @@ def func_insert_stock_data_into_table(table_data, conn):
     try:
         with conn.cursor() as cursor:
             # table_dataのデータをita_tableに一括INSERT
-            for item in table_data["aCLMMfdsMarketPrice"]:
-                insert_item = convert_empty_string_to_none(item)
-                cursor.execute(insert_query, insert_item)
+            data_to_insert = [convert_empty_string_to_none(item) for item in table_data["aCLMMfdsMarketPrice"]]
+            cursor.executemany(insert_query, data_to_insert)
             conn.commit()
             print("Data inserted successfully into ita_table.")
     except (Exception, psycopg2.DatabaseError) as error:
