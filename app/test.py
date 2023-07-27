@@ -1,31 +1,34 @@
 # %%
-import psycopg2
+import os
+from get_tachibana_api import ClassTachibanaAccount, func_login
 
+URL_BASE = "https://demo-kabuka.e-shiten.jp/e_api_v4r3/"
+MY_USERID = os.environ.get('TACHIBANA_USERID')
+MY_PASSWORD = os.environ.get('TACHIBANA_PASSWORD')
+MY_PASSWORD2 = os.environ.get('TACHIBANA_PASSWORD2')
+CODE_LIST = ["5240", "9227", "3697", "5129"]
+
+
+tachibana_account = ClassTachibanaAccount(
+    json_fmt='"2"',
+    url_base=URL_BASE,
+    user_id=MY_USERID,
+    password=MY_PASSWORD,
+    password_sec=MY_PASSWORD2,
+)  # 立花証券口座インスタンス
 #%%
-# PostgreSQLに接続
-connection = psycopg2.connect(
-    host='db',
-    port='5432',
-    database='mydatabase',
-    user='myuser',
-    password='mypassword'
+json_response = func_login(tachibana_account)  # ログイン処理を実施
+
+
+# 取得した値を口座属性クラスに設定
+tachibana_account.set_property(
+    request_url=json_response.get("sUrlRequest"),
+    event_url=json_response.get("sUrlEvent"),
+    tax_category=json_response.get("sZyoutoekiKazeiC"),
 )
 
-# カーソルを作成
-cursor = connection.cursor()
+# %%
 
-# クエリを実行
-cursor.execute("SELECT * FROM mytable;")
-
-# 結果を取得
-results = cursor.fetchall()
-
-# 結果を表示
-for row in results:
-    print(row)
-
-# 接続を閉じる
-cursor.close()
-connection.close()
+json_response
 
 # %%

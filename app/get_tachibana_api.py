@@ -58,9 +58,11 @@ class ClassTachibanaAccount:
         self.password_sec = password_sec
         self.request_url = ""
         self.event_url = ""
+        self.master_url = ""
+        self.price_url = ""
         self.tax_category = ""
 
-    def set_property(self, request_url, event_url, tax_category):
+    def set_property(self, request_url, event_url, tax_category, master_url, price_url):
         """
         プロパティを設定するメソッド
 
@@ -71,6 +73,8 @@ class ClassTachibanaAccount:
         """
         self.request_url = request_url
         self.event_url = event_url
+        self.master_url = master_url
+        self.price_url = price_url
         self.tax_category = tax_category
 
 
@@ -186,7 +190,7 @@ def func_login(tachibana_account):
     return json_req
 
 
-async def func_get_stock_data(tachibana_account, code_list, client):
+def func_get_stock_data(tachibana_account, code_list):
     """
     リアルタイムの株価データを取得する関数
 
@@ -224,14 +228,49 @@ async def func_get_stock_data(tachibana_account, code_list, client):
     ]
 
     work_url = func_make_url_request(
-        False, tachibana_account.request_url, tachibana_account, req_item_list
+        False, tachibana_account.price_url, tachibana_account, req_item_list
+    )
+    http = urllib3.PoolManager()
+    req = http.request("GET", work_url)
+    bytes_reqdata = req.data
+    str_shiftjis = bytes_reqdata.decode("shift-jis", errors="ignore")
+    json_req = json.loads(str_shiftjis)
+    return json_req
+
+
+def func_get_stock_price_json(url_base, user_id, password, password2, code_list):
+    """
+    立花証券のAPIを使用して、指定された銘柄コードの株価データをJSON形式で取得する関数
+
+    Args:
+        url_base (str): 立花証券のAPIのベースURL
+        user_id (str): ユーザーID
+        password (str): パスワード
+        password2 (str): 第2パスワード
+        code_list (list): 株価データを取得する銘柄コードのリスト
+
+    Returns:
+        json: 取得した株価データの辞書型
+    """
+    tachibana_account = ClassTachibanaAccount(
+        json_fmt='"4"',  # 4に固定しないとエラー
+        url_base=url_base,
+        user_id=user_id,
+        password=password,
+        password_sec=password2,
+    )  # 立花証券口座インスタンス
+
+    json_response = func_login(tachibana_account)  # ログイン処理を実施
+
+    # 取得した値を口座属性クラスに設定
+    tachibana_account.set_property(
+        request_url=json_response.get("sUrlRequest"),
+        event_url=json_response.get("sUrlEvent"),
+        tax_category=json_response.get("sZyoutoekiKazeiC"),
+        master_url=json_response.get("sUrlMaster"),
+        price_url=json_response.get("sUrlPrice"),
     )
 
-    response = await client.get(work_url)
-    response.raise_for_status()  # ステータスコードがエラーであれば例外を発生させる
-    data = response.content
-    json_data = json.loads(data.decode("shift-jis", errors="ignore"))
+    return_json = func_get_stock_data(tachibana_account, code_list)
 
-    return json_data
-
-# %%
+    return return_json

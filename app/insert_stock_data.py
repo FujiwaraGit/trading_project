@@ -15,10 +15,11 @@ async def fetch_data(session, url):
     async with session.get(url) as response:
         if response.status == 200:
             data = await response.json()  # レスポンスからJSONデータを取得
-            timestamp= datetime.now().isoformat()  # 現在のタイムスタンプを取得
+            timestamp = datetime.now().isoformat()  # 現在のタイムスタンプを取得
             value = data['value']  # データから必要な値を抽出
             cursor.execute('INSERT INTO data (timestamp, value) VALUES (?, ?)', (timestamp, value))  # データをデータベースに挿入
             conn.commit()  # データベースの変更をコミット
+
 
 # ロングポーリングを行う非同期関数
 async def long_polling():

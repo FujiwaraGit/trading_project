@@ -14,35 +14,38 @@ CODE_LISTに取得したい株式の銘柄コードをリストとして追加�
 ログインに成功した場合、応答データには取得した株式データが含まれます。
 """
 import os
-import asyncio
-import aiohttp
-from get_tachibana_api import ClassTachibanaAccount, func_login, func_get_stock_data
+from datetime import datetime
+from get_tachibana_api import func_get_stock_price_json, func_login
 
-URL_BASE = "https://demo-kabuka.e-shiten.jp/e_api_v4r3/"
+# %%
+URL_BASE = os.environ.get('TACHIBANA_URL_BASE')
 MY_USERID = os.environ.get('TACHIBANA_USERID')
 MY_PASSWORD = os.environ.get('TACHIBANA_PASSWORD')
 MY_PASSWORD2 = os.environ.get('TACHIBANA_PASSWORD2')
 CODE_LIST = ["5240", "9227", "3697", "5129"]
 
-# async def fetch_data(session, url):
-#     """
-#     APIからデータを非同期に取得してDBに格納する関数
+return_stock_json = func_get_stock_price_json(URL_BASE, MY_USERID, MY_PASSWORD, MY_PASSWORD2, CODE_LIST)
 
-#     Args:
-#         session (aiohttp.ClientSession): Aiohttpのクライアントセッション
-#         url (str): データを提供するAPIのエンドポイント
 
-#     Returns:
-#         None
-#     """
-#     async with session.get(url) as response:
-#         if response.status == 200:
-#             data = await response.json()  # レスポンスからJSONデータを取得
-#             timestamp = datetime.now().isoformat()  # 現在のタイムスタンプを取得
-#             value = data['value']  # データから必要な値を抽出
-#             cursor.execute('INSERT INTO data (timestamp, value) VALUES (?, ?)', (timestamp, value))  # データをデータベースに挿入
-#             conn.commit()  # データベースの変更をコミット
-#             # ロングポーリングを行う非同期関数
+async def fetch_data(session, url):
+    """
+    APIからデータを非同期に取得してDBに格納する関数
+
+    Args:
+        session (aiohttp.ClientSession): Aiohttpのクライアントセッション
+        url (str): データを提供するAPIのエンドポイント
+
+    Returns:
+        None
+    """
+    async with session.get(url) as response:
+        if response.status == 200:
+            data = await response.json()  # レスポンスからJSONデータを取得
+            timestamp = datetime.now().isoformat()  # 現在のタイムスタンプを取得
+            value = data['value']  # データから必要な値を抽出
+            cursor.execute('INSERT INTO data (timestamp, value) VALUES (?, ?)', (timestamp, value))  # データをデータベースに挿入
+            conn.commit()  # データベースの変更をコミット
+            # ロングポーリングを行う非同期関数
 
 
 async def func_get_api_and_isert_db(tachibana_account, code_list, client):
@@ -90,19 +93,6 @@ async def main():
         and len(json_response.get("sUrlEvent") > 0)
     ):  # ログインエラーの場合
         return  # 終了
-
-    # 取得した値を口座属性クラスに設定
-
-    tachibana_account.set_property(
-        request_url=json_response.get("sUrlRequest"),
-        event_url=json_response.get("sUrlEvent"),
-        tax_category=json_response.get("sZyoutoekiKazeiC"),
-    )
-
-    async with aiohttp.ClientSession() as session:
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(func_insert_roop(tachibana_account))  # 非同期処理を実行
-
 
 if __name__ == '__main__':
     main()
