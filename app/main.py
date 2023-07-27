@@ -1,22 +1,11 @@
 # %%
-"""
-立花証券のAPIを使用して株式データを取得するPythonプログラムです。
-
-使用方法:
-
-自分のユーザーID、パスワード、第2パスワードを変数に設定してください。
-CODE_LISTに取得したい株式の銘柄コードをリストとして追加してください。
-プログラムを実行してください。
-注意事項:
-
-ログインが成功した場合、株式データを取得します。
-応答データはJSON形式で返されます。
-ログインに成功した場合、応答データには取得した株式データが含まれます。
-"""
 import os
+import time
+import multiprocessing
 import psycopg2
 from get_tachibana_api import func_get_stock_data, func_login_and_get_account_instance
 from insert_data_to_pg import func_insert_stock_data_into_table
+
 
 # 取得するデータリスト
 CODE_LIST = ["5240", "9227", "3697", "5129"]
@@ -28,6 +17,56 @@ db_params = {
     "user": os.environ.get("POSTGRES_USER"),
     "password": os.environ.get("POSTGRES_PASSWORD"),
 }
+
+
+def execute_tasks(account_instance, code_list, connection):
+    """
+    タスクを実行する関数
+
+    Args:
+        account_instance (object): アカウントのインスタンス
+        code_list (list): 取得するデータリスト
+        connection (psycopg2.Connection): PostgreSQLへの接続情報
+
+    Returns:
+        None
+    """
+    while True:
+        start_time = time.time()
+
+        return_json = func_get_stock_data(account_instance, code_list)
+        func_insert_stock_data_into_table(return_json, connection)
+
+        elapsed_time = time.time() - start_time
+
+        if elapsed_time < 0.125:
+            time.sleep(0.125 - elapsed_time)
+
+
+def execute_tasks_with_multiprocessing(account_instance, code_list, connection):
+    """
+    マルチプロセスでタスクを実行する関数
+
+    Args:
+        account_instance (object): アカウントのインスタンス
+        code_list (list): 取得するデータリスト
+        connection (psycopg2.Connection): PostgreSQLへの接続情報
+
+    Returns:
+        None
+    """
+    process = multiprocessing.Process(target=execute_tasks, args=(account_instance, code_list, connection))
+    process.start()
+
+    while True:
+        try:
+            # メインプロセスがここで待機することで、マルチプロセスが継続して実行される
+            process.join(0.125)
+        except KeyboardInterrupt:
+            # Ctrl+Cが押された場合、マルチプロセスを終了させる
+            process.terminate()
+            process.join()
+            break
 
 
 def main():
@@ -42,29 +81,17 @@ def main():
 
     # ログイン失敗時の処理
     if account_instance is None:
-        # 現状ただの終了にしているが、アラートなど改良余地あり
+        print("ログインに失敗しました。プログラムを終了します。")
         return
 
-    # 株式データを取得
-    return_json = func_get_stock_data(account_instance, CODE_LIST)
-
     # PostgreSQLに接続
-    try:
-        connection = psycopg2.connect(**db_params)
-        # データをinsert
-        func_insert_stock_data_into_table(return_json, connection)
-    except (Exception, psycopg2.Error) as error:
-        print("Error while connecting to PostgreSQL:", error)
-    finally:
-        if connection:
-            connection.close()
+    connection = psycopg2.connect(**db_params)
+
+    if connection:
+        execute_tasks_with_multiprocessing(account_instance, CODE_LIST, connection)
 
 
 if __name__ == '__main__':
     main()
-
-# %%
-
-db_params
 
 # %%

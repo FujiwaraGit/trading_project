@@ -1,3 +1,4 @@
+
 def convert_empty_string_to_none(item):
     """
     空文字列をNoneに変換する関数
