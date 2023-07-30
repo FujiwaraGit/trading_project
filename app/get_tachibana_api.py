@@ -1,17 +1,27 @@
 # %%
 """
-立花証券のAPIを使用して株式データを取得するPythonプログラムです。
+ファイル説明:
+このファイルは、立花証券口座クラスと関連するユーティリティ関数を含むPythonスクリプトです。
+立花証券口座クラスは、立花証券のWeb APIを使用して株価データを取得する機能を提供します。
+このスクリプトを使用するには、立花証券のユーザーIDとパスワードを環境変数に設定してください。
 
-使用方法:
+クラスの概要:
+- ClassTachibanaAccount: 立花証券口座クラス
+    - set_property(request_url, event_url, tax_category, master_url, price_url): プロパティを設定するメソッド
 
-自分のユーザーID、パスワード、第2パスワードを変数に設定してください。
-CODE_LISTに取得したい株式の銘柄コードをリストとして追加してください。
-プログラムを実行してください。
-注意事項:
+ユーティリティ関数の概要:
+- func_check_json_dquat(str_value): JSONの値の前後にダブルクオーテーションがない場合に付ける関数
+- func_p_sd_date(int_systime): "p_sd_date"の書式の文字列としてシステム時刻を返す関数
+- func_make_url_request(auth_flg, url_target, tachibana_account, req_item_list): requestの文字列を作成して返す関数
+- func_login(tachibana_account): ログインを行い、応答データを返す関数
+- func_get_stock_data(tachibana_account, code_list): リアルタイムの株価データを取得する関数
+- func_login_and_get_account_instance(): ログインを行い、立花証券口座クラスのインスタンスを返す関数
 
-ログインが成功した場合、株式データを取得します。
-応答データはJSON形式で返されます。
-ログインに成功した場合、応答データには取得した株式データが含まれます。
+ファイルの使い方:
+1. 環境変数に立花証券のユーザーID(`TACHIBANA_USERID`)とパスワード(`TACHIBANA_PASSWORD`, `TACHIBANA_PASSWORD2`)を設定します。
+2. 立花証券口座クラスのインスタンスを作成します(`func_login_and_get_account_instance()`を使用)。
+3. 株価データを取得したい銘柄コードを指定し、`func_get_stock_data(tachibana_account, code_list)`を使用して株価データを取得します。
+4. 必要に応じて取得した株価データを加工して利用します。
 """
 
 import datetime

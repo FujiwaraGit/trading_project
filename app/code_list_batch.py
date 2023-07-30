@@ -1,3 +1,24 @@
+"""
+ファイル説明:
+このPythonスクリプトは、東証から株価データをダウンロードして整形し、PostgreSQLデータベースに挿入する機能を提供します。
+また、ウェブサイトから新しいIPO（新規公開株）データを抽出し、データベースに挿入する機能も含まれています。
+
+関数の概要:
+- get_jpx_data(): 東証から株価データをダウンロードして取得する関数
+- preprocess_data(df): ダウンロードした株価データを整形する関数
+- insert_data_to_table(df, db_params): 株価データをデータベースにInsertかUpdateする関数
+- fetch_html_content(url): 指定されたURLからHTMLコードを取得する関数
+- parse_html_to_dataframe(html_content): HTMLコードからIPOデータを抽出して整形する関数
+- insert_new_rows_to_database(df, db_params): 新しいIPOデータをデータベースに挿入する関数
+- main(): メインの実行関数
+
+ファイルの使い方:
+1. ダウンロードしたい株価データのURLを `url` 変数に設定します。
+2. PostgreSQLデータベースの接続情報を環境変数に設定します。
+3. スクリプトを実行して、株価データを取得し、PostgreSQLデータベースに挿入します。
+4. ウェブサイトからIPOデータを取得し、新しいIPOデータをデータベースに挿入します。
+"""
+
 # %%
 import pandas as pd
 import jaconv

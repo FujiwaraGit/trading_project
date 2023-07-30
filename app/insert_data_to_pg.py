@@ -12,8 +12,22 @@ def func_insert_stock_data_into_table(table_data, conn):
     password2 (str): 立花証券の第2パスワード
     code_list (list): 株価データを取得する銘柄コードのリスト
 
+    テーブルデータのリスト(table_data)は以下のような辞書型の要素を持つリストです:
+    [
+        {"sIssueCode": "銘柄コード1", "pDPP": 値1, "pDV": 値2, ... },
+        {"sIssueCode": "銘柄コード2", "pDPP": 値1, "pDV": 値2, ... },
+        ...
+    ]
+
     Returns:
     dict: 取得した株価データの辞書型
+
+    注意:
+    - データベースへの接続 (conn) は関数の外部で作成され、適切にコミットおよびクローズされている必要があります。
+    - データベーステーブル (ita_table) は事前に作成されている必要があります。
+    - テーブルに存在しないカラムがtable_dataに含まれる場合はエラーが発生します。
+    - データの挿入に失敗した場合はロールバックが行われます。
+
     """
 
     insert_query = """
