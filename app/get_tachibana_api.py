@@ -19,6 +19,7 @@ import json
 import pytz
 import urllib3
 import os
+from utility import convert_empty_string_to_none
 
 
 class ClassTachibanaAccount:
@@ -233,9 +234,17 @@ def func_get_stock_data(tachibana_account, code_list):
     req = http.request("GET", work_url)
     bytes_reqdata = req.data
     str_shiftjis = bytes_reqdata.decode("shift-jis", errors="ignore")
-    json_req = json.loads(str_shiftjis)
+    response_json = json.loads(str_shiftjis)
 
-    return json_req
+    retur_data = []
+    for item in response_json["aCLMMfdsMarketPrice"]:
+        item = convert_empty_string_to_none(item)
+        datetime_str = response_json["p_rv_date"].replace(' ', '').replace('.', '-', 1).replace('.', '-', 1)
+        datetime_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%d-%H:%M:%S.%f')
+        item.update({'created_at': datetime_obj})
+        retur_data.append(item)
+
+    return retur_data
 
 
 def func_login_and_get_account_instance():

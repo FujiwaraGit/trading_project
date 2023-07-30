@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS ita_table (
   pVWAP numeric(6, 1),
   pQAP numeric(6, 1),
   pQAS numeric(6, 1),
-  pQBP integer,
+  pQBP numeric(6, 1),
   pQBS numeric(6, 1),
   pAAV integer,
   pABV numeric(6, 1),
