@@ -5,7 +5,7 @@ import concurrent.futures
 import psycopg2
 import get_tachibana_api
 import insert_data_to_pg
-import target_list_batch
+import target_code
 import utility
 
 
@@ -57,7 +57,8 @@ def execute_tasks_in_loop(account_instance, code_list, connection, interval=0.12
     """
     # ThreadPoolExecutorを作成
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        while True:
+        # 15時までのループを開始
+        while time.localtime().tm_hour < 15:
             start_time = time.time()
 
             # execute_tasksを非同期に実行
@@ -69,6 +70,12 @@ def execute_tasks_in_loop(account_instance, code_list, connection, interval=0.12
 
             if time_to_wait > 0:
                 time.sleep(time_to_wait)
+
+        # 15時になったら最後の1回だけタスクを実行
+        executor.submit(execute_task, account_instance, code_list, connection)
+
+    # PostgreSQLの接続をクローズ
+    connection.close()
 
 
 def main():
@@ -96,7 +103,7 @@ def main():
 
     # code_listを取得
     api_id_value = os.environ.get('TACHIBANA_USERID')
-    code_list = target_list_batch.get_codes_by_api_id_value(api_id_value)
+    code_list = target_code.get_codes_by_api_id_value(api_id_value)
 
     if connection:
         # マルチプロセスでタスクを実行
@@ -105,3 +112,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# %%
