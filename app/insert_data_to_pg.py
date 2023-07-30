@@ -35,14 +35,10 @@ def func_insert_stock_data_into_table(table_data, conn):
         )
     """
 
-    print(table_data)
     try:
         with conn.cursor() as cursor:
-            # 一括INSERT
-
             cursor.executemany(insert_query, table_data)
             conn.commit()
-            print("Data inserted successfully into ita_table.")
     except (Exception, psycopg2.DatabaseError) as error:
         print("Error:", error)
         conn.rollback()

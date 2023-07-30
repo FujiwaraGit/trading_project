@@ -236,6 +236,7 @@ def func_get_stock_data(tachibana_account, code_list):
     str_shiftjis = bytes_reqdata.decode("shift-jis", errors="ignore")
     response_json = json.loads(str_shiftjis)
 
+    # データを整形
     retur_data = []
     for item in response_json["aCLMMfdsMarketPrice"]:
         item = convert_empty_string_to_none(item)

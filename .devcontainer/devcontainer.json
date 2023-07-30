@@ -7,25 +7,26 @@
 		"ms-python.python",
 		"ms-toolsai.jupyter",
 		"flake8.flake8",
-		"ckolkman.vscode-postgres"
+		"ckolkman.vscode-postgres",
+		"mtxr.sqltools-driver-pg",
 	],
 	"settings": {
-	  "terminal.integrated.shell.linux": "/bin/bash",
-	  "python.linting.enabled": true,
-	  "python.linting.lintOnSave": true,
-	  "python.linting.pylintEnabled": false,
-	  "python.linting.flake8Enabled": true,
-	  "python.linting.flake8Args": [
-		"--max-line-length=150",
-		"--ignore=E203,W503,W504"
-	  ],
-	  "python.formatting.provider": "autopep8"
+		"terminal.integrated.shell.linux": "/bin/bash",
+		"python.linting.enabled": true,
+		"python.linting.lintOnSave": true,
+		"python.linting.pylintEnabled": false,
+		"python.linting.flake8Enabled": true,
+		"python.linting.flake8Args": [
+			"--max-line-length=150",
+			"--ignore=E203,W503,W504"
+		],
+		"python.formatting.provider": "autopep8"
 	},
 	"containerEnv": {
-	  "devcontainer.localFolder": "${localWorkspaceFolder}",
-	  "devcontainer.configFile": "${localWorkspaceFolder}/.devcontainer/devcontainer.json"
+		"devcontainer.localFolder": "${localWorkspaceFolder}",
+		"devcontainer.configFile": "${localWorkspaceFolder}/.devcontainer/devcontainer.json"
 	},
 	"mounts": [
-	  "source=${localWorkspaceFolder},target=/vscode,type=bind,consistency=cached"
+		"source=${localWorkspaceFolder},target=/vscode,type=bind,consistency=cached"
 	]
-  }
+}
