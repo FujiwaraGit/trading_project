@@ -67,3 +67,18 @@ CREATE INDEX idx_ita_table_code ON ita_table (code);
 
 -- created_at列にインデックスを作成
 CREATE INDEX idx_ita_table_created_at ON ita_table (created_at);
+
+
+CREATE TABLE master_stock_table (
+    code integer PRIMARY KEY,
+    name VARCHAR(255),
+    market_product_category VARCHAR(225),  -- 修正: VARCHAR(2)に変更
+    sector33_code integer,
+    sector33_category VARCHAR(255),
+    sector17_code integer,
+    sector17_category VARCHAR(255),
+    scale_code integer,
+    scale_category VARCHAR(255)
+    created_at timestamp DEFAULT current_timestamp,
+    updated_at timestamp DEFAULT current_timestamp
+);
