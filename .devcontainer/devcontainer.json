@@ -8,7 +8,7 @@
 		"ms-toolsai.jupyter",
 		"flake8.flake8",
 		"ckolkman.vscode-postgres",
-		"mtxr.sqltools-driver-pg",
+		"mtxr.sqltools-driver-pg"
 	],
 	"settings": {
 		"terminal.integrated.shell.linux": "/bin/bash",
