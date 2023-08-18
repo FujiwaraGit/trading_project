@@ -25,5 +25,8 @@ done
 # /app/code_list_batch.py を実行
 /usr/local/bin/python3 /app/target_code.py
 
+#ファイルの削除
+rm /app/data_j.xls
+
 # コンテナのメインプロセスを実行
 exec "$@"
