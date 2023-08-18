@@ -67,10 +67,9 @@ def execute_task(account_instance, code_list, connection):
     Returns:
         None
     """
-
     # 証券コードに対応する株価データを取得
     return_json = get_tachibana_api.func_get_stock_data(account_instance, code_list)
-
+    print(return_json)
     # 取得した株価データをデータベースに挿入
     insert_data_to_pg.func_insert_stock_data_into_table(return_json, connection)
 
@@ -94,10 +93,8 @@ def execute_tasks_in_loop(account_instance, code_list, connection, interval=0.12
         # 15時までのループを開始
         while time.localtime().tm_hour < 15:
             start_time = time.time()
-
             # execute_tasksを非同期に実行
             executor.submit(execute_task, account_instance, code_list, connection)
-
             # 次のタスクがinterval秒後に開始されるように調整
             elapsed_time = time.time() - start_time
             time_to_wait = interval - elapsed_time
@@ -148,7 +145,3 @@ if __name__ == '__main__':
     main()
 
 # %%
-
-
-
-

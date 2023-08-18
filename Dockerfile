@@ -8,6 +8,7 @@ WORKDIR /app
 RUN apt-get update \
     && apt-get install -y cron \
     && apt-get install -y vim \
+    && apt-get install -y netcat-openbsd \
     && apt-get install -y postgresql-client libpq-dev
 
 # requirements.txtファイルを現在のディレクトリからコンテナの/appディレクトリにコピー

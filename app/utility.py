@@ -19,9 +19,9 @@ main関数内で各ユーティリティ関数の使用例が示されていま�
 
 # %%
 import datetime
-import holidays
 import subprocess
 import urllib.parse
+import holidays
 
 
 def convert_empty_string_to_none(item):
@@ -69,7 +69,7 @@ def is_holiday_jpx(date):
     bool: 休日であればTrue、休日でなければFalseを返します。
     """
     # 東証の休日カレンダーを取得
-    jpx_holidays = holidays.Japan(years=datetime.date.today().year)
+    jpx_holidays = holidays.JP(years=datetime.date.today().year)
 
     # 祝日として1月2日、1月3日、12月31日を追加
     jpx_holidays.append({datetime.date(datetime.date.today().year, 1, 2): "2nd January"})
@@ -112,17 +112,19 @@ def func_execute_curl_command(url):
 
     Returns:
         result(str): 実行結果
-              成功時は'stdout'
-              失敗時は'stderr'
+        成功時は'stdout'
+        失敗時は'stderr'
     """
+    # URLからパラメータ部分を抽出
     params_start = url.find('?')
+    base_url = url[:params_start]
     params = url[params_start+1:]
 
     # パラメータをURLエンコード
     encoded_params = urllib.parse.quote(params, safe='')
 
     # 最終的なフォーマットに整形
-    formatted_url = f'https://demo-kabuka.e-shiten.jp/e_api_v4r3/auth/?{encoded_params}'
+    formatted_url = f'{base_url}?{encoded_params}'
 
     # curlコマンドを組み立て
     curl_command = f'curl -s -k -X GET {formatted_url}'

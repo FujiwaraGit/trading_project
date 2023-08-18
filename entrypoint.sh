@@ -13,6 +13,12 @@ echo "0 0 * * * /usr/local/bin/python3 /app/code_list_batch.py" > /etc/cron.d/cr
 # cronデーモンを起動
 cron
 
+# データベースの起動を待つ処理を追加
+while ! nc -z db 5432; do
+    echo "Waiting for the database to start..."
+    sleep 1
+done
+
 # /app/code_list_batch.py を実行
 /usr/local/bin/python3 /app/code_list_batch.py
 

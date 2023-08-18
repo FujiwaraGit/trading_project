@@ -8,5 +8,17 @@
     "python.linting.enabled": true,
     "python.linting.flake8Args": [
         "--max-line-length=150"
+    ],
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "db",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "db",
+            "database": "mydatabase",
+            "username": "myuser",
+            "password": "mypassword"
+        }
     ]
 }

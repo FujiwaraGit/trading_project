@@ -27,9 +27,8 @@
 import datetime
 import json
 import pytz
-import urllib3
 import os
-from utility import convert_empty_string_to_none
+import utility
 
 
 class ClassTachibanaAccount:
@@ -180,7 +179,7 @@ def func_login(tachibana_account):
     Returns:
         json: 応答データのjson型
     """
-    http = urllib3.PoolManager()
+
     req_item_list = [
         {"key": '"sCLMID"', "value": "CLMAuthLoginRequest"},
         {"key": '"sUserId"', "value": tachibana_account.user_id},
@@ -191,11 +190,8 @@ def func_login(tachibana_account):
     work_url = func_make_url_request(
         True, tachibana_account.url_base, tachibana_account, req_item_list
     )
-    print(work_url)
-    req = http.request("GET", work_url)
-    bytes_reqdata = req.data
-    str_shiftjis = bytes_reqdata.decode("shift-jis", errors="ignore")
-    json_req = json.loads(str_shiftjis)
+    response = utility.func_execute_curl_command(work_url)
+    json_req = json.loads(response)
 
     return json_req
 
@@ -240,16 +236,14 @@ def func_get_stock_data(tachibana_account, code_list):
     work_url = func_make_url_request(
         False, tachibana_account.price_url, tachibana_account, req_item_list
     )
-    http = urllib3.PoolManager()
-    req = http.request("GET", work_url)
-    bytes_reqdata = req.data
-    str_shiftjis = bytes_reqdata.decode("shift-jis", errors="ignore")
-    response_json = json.loads(str_shiftjis)
+    response = utility.func_execute_curl_command(work_url)
+    response_json = json.loads(response)
 
+    print(response_json)
     # データを整形
     retur_data = []
     for item in response_json["aCLMMfdsMarketPrice"]:
-        item = convert_empty_string_to_none(item)
+        item = utility.convert_empty_string_to_none(item)
         datetime_str = response_json["p_rv_date"].replace(' ', '').replace('.', '-', 1).replace('.', '-', 1)
         datetime_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%d-%H:%M:%S.%f')
         item.update({'created_at': datetime_obj})
