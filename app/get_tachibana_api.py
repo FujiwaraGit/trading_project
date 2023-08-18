@@ -179,19 +179,21 @@ def func_login(tachibana_account):
     Returns:
         json: 応答データのjson型
     """
+    try:
+        req_item_list = [
+            {"key": '"sCLMID"', "value": "CLMAuthLoginRequest"},
+            {"key": '"sUserId"', "value": tachibana_account.user_id},
+            {"key": '"sPassword"', "value": tachibana_account.password},
+            {"key": '"sJsonOfmt"', "value": tachibana_account.json_fmt},
+        ]
 
-    req_item_list = [
-        {"key": '"sCLMID"', "value": "CLMAuthLoginRequest"},
-        {"key": '"sUserId"', "value": tachibana_account.user_id},
-        {"key": '"sPassword"', "value": tachibana_account.password},
-        {"key": '"sJsonOfmt"', "value": tachibana_account.json_fmt},
-    ]
-
-    work_url = func_make_url_request(
-        True, tachibana_account.url_base, tachibana_account, req_item_list
-    )
-    response = utility.func_execute_curl_command(work_url)
-    json_req = json.loads(response)
+        work_url = func_make_url_request(
+            True, tachibana_account.url_base, tachibana_account, req_item_list
+        )
+        response = utility.func_execute_curl_command(work_url)
+        json_req = json.loads(response)
+    except Exception as error:
+        raise error
 
     return json_req
 
@@ -207,81 +209,89 @@ def func_get_stock_data(tachibana_account, code_list):
     Returns:
         json: 取得した株価データの辞書型
     """
+    try:
+        req_item_list = [
+            {"key": '"sCLMID"', "value": '"CLMMfdsGetMarketPrice"'},
+            {"key": '"sTargetIssueCode"', "value": ",".join(map(str, code_list))},
+            {
+                "key": '"sTargetColumn"',
+                "value": (
+                    # 現値,出来高,前日終値,始値,高値,安値,VWAP
+                    "pDPP,pDV,pPRP,pDOP,pDHP,pDLP,pVWAP,"
+                    # 売気配値,売気配値種,買気配値,買気配値種
+                    "pQAP,pQAS,pQBP,pQBS,"
+                    # 成売,成買,OVER,UNDER"
+                    "pAAV,pABV,pQOV,pQUV,"
+                    # 売値10,売値9,売値8,売値7,売値6,売値5,売値4,売値3,売値2,売値1
+                    "pGAP10,pGAP9,pGAP8,pGAP7,pGAP6,pGAP5,pGAP4,pGAP3,pGAP2,pGAP1,"
+                    # 買値10,買値9,買値8,買値7,買値6,買値5,買値4,買値3,買値2,買値1
+                    "pGBP10,pGBP9,pGBP8,pGBP7,pGBP6,pGBP5,pGBP4,pGBP3,pGBP2,pGBP1,"
+                    # 売量10,売量9,売量8,売量7,売量6,売量5,売量4,売量3,売量2,売量1
+                    "pGAV10,pGAV9,pGAV8,pGAV7,pGAV6,pGAV5,pGAV4,pGAV3,pGAV2,pGAV1,"
+                    # 買量10,買量9,買量8,買量7,買量6,買量5,買量4,買量3,買量2,買量1
+                    "pGBV10,pGBV9,pGBV8,pGBV7,pGBV6,pGBV5,pGBV4,pGBV3,pGBV2,pGBV1"
+                ),
+            },
+            {"key": '"sJsonOfmt"', "value": tachibana_account.json_fmt},
+        ]
 
-    req_item_list = [
-        {"key": '"sCLMID"', "value": '"CLMMfdsGetMarketPrice"'},
-        {"key": '"sTargetIssueCode"', "value": ",".join(map(str, code_list))},
-        {
-            "key": '"sTargetColumn"',
-            "value": (
-                # 現値,出来高,前日終値,始値,高値,安値,VWAP
-                "pDPP,pDV,pPRP,pDOP,pDHP,pDLP,pVWAP,"
-                # 売気配値,売気配値種,買気配値,買気配値種
-                "pQAP,pQAS,pQBP,pQBS,"
-                # 成売,成買,OVER,UNDER"
-                "pAAV,pABV,pQOV,pQUV,"
-                # 売値10,売値9,売値8,売値7,売値6,売値5,売値4,売値3,売値2,売値1
-                "pGAP10,pGAP9,pGAP8,pGAP7,pGAP6,pGAP5,pGAP4,pGAP3,pGAP2,pGAP1,"
-                # 買値10,買値9,買値8,買値7,買値6,買値5,買値4,買値3,買値2,買値1
-                "pGBP10,pGBP9,pGBP8,pGBP7,pGBP6,pGBP5,pGBP4,pGBP3,pGBP2,pGBP1,"
-                # 売量10,売量9,売量8,売量7,売量6,売量5,売量4,売量3,売量2,売量1
-                "pGAV10,pGAV9,pGAV8,pGAV7,pGAV6,pGAV5,pGAV4,pGAV3,pGAV2,pGAV1,"
-                # 買量10,買量9,買量8,買量7,買量6,買量5,買量4,買量3,買量2,買量1
-                "pGBV10,pGBV9,pGBV8,pGBV7,pGBV6,pGBV5,pGBV4,pGBV3,pGBV2,pGBV1"
-            ),
-        },
-        {"key": '"sJsonOfmt"', "value": tachibana_account.json_fmt},
-    ]
+        work_url = func_make_url_request(
+            False, tachibana_account.price_url, tachibana_account, req_item_list
+        )
+        response = utility.func_execute_curl_command(work_url)
+        response_json = json.loads(response)
 
-    work_url = func_make_url_request(
-        False, tachibana_account.price_url, tachibana_account, req_item_list
-    )
-    response = utility.func_execute_curl_command(work_url)
-    response_json = json.loads(response)
+        # データを整形
+        return_data = []
+        for item in response_json["aCLMMfdsMarketPrice"]:
+            item = utility.convert_empty_string_to_none(item)
+            datetime_str = response_json["p_rv_date"].replace(' ', '').replace('.', '-', 1).replace('.', '-', 1)
+            datetime_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%d-%H:%M:%S.%f')
+            item.update({'created_at': datetime_obj})
+            return_data.append(item)
+    except Exception as error:
+        raise error
 
-    print(response_json)
-    # データを整形
-    retur_data = []
-    for item in response_json["aCLMMfdsMarketPrice"]:
-        item = utility.convert_empty_string_to_none(item)
-        datetime_str = response_json["p_rv_date"].replace(' ', '').replace('.', '-', 1).replace('.', '-', 1)
-        datetime_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%d-%H:%M:%S.%f')
-        item.update({'created_at': datetime_obj})
-        retur_data.append(item)
+    if len(return_data) > 0:
+        raise Exception("the response ita rows is empty")
 
-    return retur_data
+    return return_data
 
 
 def func_login_and_get_account_instance():
-    URL_BASE = "https://demo-kabuka.e-shiten.jp/e_api_v4r3/"
-    MY_USERID = os.environ.get('TACHIBANA_USERID')
-    MY_PASSWORD = os.environ.get('TACHIBANA_PASSWORD')
-    MY_PASSWORD2 = os.environ.get('TACHIBANA_PASSWORD2')
+    try:
+        URL_BASE = "https://demo-kabuka.e-shiten.jp/e_api_v4r3/"
+        MY_USERID = os.environ.get('TACHIBANA_USERID')
+        MY_PASSWORD = os.environ.get('TACHIBANA_PASSWORD')
+        MY_PASSWORD2 = os.environ.get('TACHIBANA_PASSWORD2')
 
-    tachibana_account = ClassTachibanaAccount(
-        json_fmt='"4"',
-        url_base=URL_BASE,
-        user_id=MY_USERID,
-        password=MY_PASSWORD,
-        password_sec=MY_PASSWORD2,
-    )  # 立花証券口座インスタンス
+        tachibana_account = ClassTachibanaAccount(
+            json_fmt='"4"',
+            url_base=URL_BASE,
+            user_id=MY_USERID,
+            password=MY_PASSWORD,
+            password_sec=MY_PASSWORD2,
+        )  # 立花証券口座インスタンス
 
-    json_response = func_login(tachibana_account)  # ログイン処理を実施
+        json_response = func_login(tachibana_account)  # ログイン処理を実施
 
-    # ログインエラーの場合
-    if not (int(json_response.get("p_errno")) == 0 and len(json_response.get("sUrlEvent")) > 0):
-        return None
+        # ログインエラーの場合
+        if not (int(json_response.get("p_errno")) == 0 and len(json_response.get("sUrlEvent")) > 0):
+            raise Exception("login error")
 
-    # 取得した値を口座属性クラスに設定
-    tachibana_account.set_property(
-        request_url=json_response.get("sUrlRequest"),
-        event_url=json_response.get("sUrlEvent"),
-        tax_category=json_response.get("sZyoutoekiKazeiC"),
-        master_url=json_response.get("sUrlMaster"),
-        price_url=json_response.get("sUrlPrice"),
-    )
+        # 取得した値を口座属性クラスに設定
+        tachibana_account.set_property(
+            request_url=json_response.get("sUrlRequest"),
+            event_url=json_response.get("sUrlEvent"),
+            tax_category=json_response.get("sZyoutoekiKazeiC"),
+            master_url=json_response.get("sUrlMaster"),
+            price_url=json_response.get("sUrlPrice"),
+        )
+        print("tachibana_login_sucsess")
 
-    print("login_sucsess")
+    except Exception as error:
+        raise error
+
     return tachibana_account
 
 # %%

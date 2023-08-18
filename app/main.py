@@ -35,6 +35,7 @@ API利用の際は利用規約に従って適切にご利用ください。
 # %%
 import os
 import time
+import logging
 import concurrent.futures
 import psycopg2
 import get_tachibana_api
@@ -42,6 +43,14 @@ import insert_data_to_pg
 import target_code
 import utility
 
+# ログ設定
+logging.basicConfig(
+    filename='/app/log/insert_ita.log',  # ログをファイルに保存する場合
+    level=logging.DEBUG,     # 出力レベルを設定
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+# loggerのインスタンス化
+logger = logging.getLogger(__name__)
 
 # PostgreSQLの接続情報を環境変数から取得
 db_params = {
@@ -69,12 +78,11 @@ def execute_task(account_instance, code_list, connection):
     """
     # 証券コードに対応する株価データを取得
     return_json = get_tachibana_api.func_get_stock_data(account_instance, code_list)
-    print(return_json)
     # 取得した株価データをデータベースに挿入
     insert_data_to_pg.func_insert_stock_data_into_table(return_json, connection)
 
 
-def execute_tasks_in_loop(account_instance, code_list, connection, interval=0.125, max_workers=10):
+def execute_tasks_in_loop(account_instance, code_list, connection, interval=0.1, max_workers=10):
     """
     タスクを定期的に実行する関数
 
@@ -104,9 +112,7 @@ def execute_tasks_in_loop(account_instance, code_list, connection, interval=0.12
 
         # 15時になったら最後の1回だけタスクを実行
         executor.submit(execute_task, account_instance, code_list, connection)
-
-    # PostgreSQLの接続をクローズ
-    connection.close()
+        return
 
 
 def main():
@@ -117,28 +123,38 @@ def main():
         None
     """
 
+    # 開始のログを出力
+    logger.info('start: ' + __name__)
+    print('start: ' + __name__)
+
     # 本日休日なら終了
     if(utility.is_today_holiday() is True):
+        print('completion: Closed due to a holiday.')
+        logger.info('completion: Closed due to a holiday.')
         return
 
-    # ログインを行い、アカウントのインスタンスを作成
-    account_instance = get_tachibana_api.func_login_and_get_account_instance()
+    try:
+        # ログインを行い、アカウントのインスタンスを作成
+        account_instance = get_tachibana_api.func_login_and_get_account_instance()
 
-    # ログイン失敗時の処理
-    if account_instance is None:
-        print("ログインに失敗しました。プログラムを終了します。")
+        # PostgreSQLに接続
+        with psycopg2.connect(**db_params) as connection:
+            # コードリストを取得
+            code_list = target_code.get_codes_by_api_id_value(os.environ.get('TACHIBANA_USERID'), connection)
+
+            # マルチプロセスでタスクを実行
+            execute_tasks_in_loop(account_instance, code_list, connection)
+
+    except Exception as error:
+        # エラーをログに記録
+        logger.error("Interruption: " + str(error))
+        # エラーメッセージをコンソールに表示
+        print("Interruption:", error)
         return
 
-    # PostgreSQLに接続
-    connection = psycopg2.connect(**db_params)
-
-    # code_listを取得
-    api_id_value = os.environ.get('TACHIBANA_USERID')
-    code_list = target_code.get_codes_by_api_id_value(api_id_value)
-
-    if connection:
-        # マルチプロセスでタスクを実行
-        execute_tasks_in_loop(account_instance, code_list, connection)
+    # 15時になったら正常終了
+    print('completion: market closure.')
+    logger.info('completion: market closure.')
 
 
 if __name__ == '__main__':

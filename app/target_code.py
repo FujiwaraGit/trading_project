@@ -78,7 +78,11 @@ def update_api_id_in_master_stock_table(code_list, api_id_value):
     print("api_idを挿入しました。")
 
 
-def get_codes_by_api_id_value(api_id_value):
+class CustomDatabaseError(Exception):
+    pass
+
+
+def get_codes_by_api_id_value(api_id_value, connection):
     """
     指定したapi_id_valueを持つmaster_stock_tableのcodeを取得する関数
 
@@ -88,27 +92,27 @@ def get_codes_by_api_id_value(api_id_value):
     Returns:
     list: 一致するcodeのリスト
     """
-    # PostgreSQLの接続情報を環境変数から取得
-    db_params = {
-        "host": os.environ.get("POSTGRES_HOST"),
-        "database": os.environ.get("POSTGRES_DB"),
-        "user": os.environ.get("POSTGRES_USER"),
-        "password": os.environ.get("POSTGRES_PASSWORD"),
-    }
 
-    # PostgreSQLデータベースに接続する
-    connection = psycopg2.connect(**db_params)
-    cursor = connection.cursor()
+    # 引数がNoneのとき例外発生
+    if api_id_value is None:
+        raise Exception("api_id_value is None")
 
-    # 指定したapi_id_valueを持つcodeを取得
-    select_query = "SELECT code FROM master_stock_table WHERE api_id = %s;"
-    cursor.execute(select_query, (api_id_value,))
-    codes = [row[0] for row in cursor.fetchall()]
+    try:
+        # PostgreSQLデータベースに接続し、トランザクション内で操作を行う
+        with connection.cursor() as cursor:
+            # 指定したapi_id_valueを持つcodeを取得するためのクエリを実行
+            select_query = "SELECT code FROM master_stock_table WHERE api_id = %s;"
+            cursor.execute(select_query, (api_id_value,))
+            codes = [row[0] for row in cursor.fetchall()]
+    except (Exception, psycopg2.DatabaseError) as error:
+        # 例外が発生した場合、そのまま上位のスコープに例外を伝播させる
+        raise error
 
-    # 接続を閉じる
-    cursor.close()
-    connection.close()
+    # 取得したcodeが0行の場合、例外を発生させる
+    if len(codes) == 0:
+        raise Exception("The code_list is 0 lines.")
 
+    # 取得したcodeを返す
     return codes
 
 

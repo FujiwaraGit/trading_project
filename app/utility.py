@@ -135,5 +135,5 @@ def func_execute_curl_command(url):
     if result.returncode == 0:
         return result.stdout
     else:
-        return result.stderr
+        raise Exception(result.stderr)
 # %%
