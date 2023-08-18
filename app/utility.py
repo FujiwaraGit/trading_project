@@ -20,6 +20,8 @@ main関数内で各ユーティリティ関数の使用例が示されていま�
 # %%
 import datetime
 import holidays
+import subprocess
+import urllib.parse
 
 
 def convert_empty_string_to_none(item):
@@ -101,4 +103,35 @@ def is_today_holiday():
     return is_holiday_today
 
 
+def func_execute_curl_command(url):
+    """
+    指定されたURLに対してcurlコマンドを実行し、結果を返す関数です。
+
+    Args:
+        url (str): 実行するURL。
+
+    Returns:
+        result(str): 実行結果
+              成功時は'stdout'
+              失敗時は'stderr'
+    """
+    params_start = url.find('?')
+    params = url[params_start+1:]
+
+    # パラメータをURLエンコード
+    encoded_params = urllib.parse.quote(params, safe='')
+
+    # 最終的なフォーマットに整形
+    formatted_url = f'https://demo-kabuka.e-shiten.jp/e_api_v4r3/auth/?{encoded_params}'
+
+    # curlコマンドを組み立て
+    curl_command = f'curl -s -k -X GET {formatted_url}'
+
+    # curlコマンドを実行
+    result = subprocess.run(curl_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    if result.returncode == 0:
+        return result.stdout
+    else:
+        return result.stderr
 # %%

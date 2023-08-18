@@ -191,7 +191,7 @@ def func_login(tachibana_account):
     work_url = func_make_url_request(
         True, tachibana_account.url_base, tachibana_account, req_item_list
     )
-
+    print(work_url)
     req = http.request("GET", work_url)
     bytes_reqdata = req.data
     str_shiftjis = bytes_reqdata.decode("shift-jis", errors="ignore")
