@@ -55,4 +55,4 @@ def func_insert_stock_data_into_table(table_data, conn):
             conn.commit()
     except (Exception, psycopg2.DatabaseError) as error:
         conn.rollback()
-        raise Exception(error)
+        raise error
