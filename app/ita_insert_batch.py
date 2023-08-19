@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 株価データを取得してPostgreSQLデータベースに保存するプログラム
 
@@ -77,12 +78,19 @@ def execute_task(account_instance, code_list, connection):
         None
     """
     # 証券コードに対応する株価データを取得
-    return_json = get_tachibana_api.func_get_stock_data(account_instance, code_list)
+    return_json = get_tachibana_api.func_get_stock_data(
+        account_instance, code_list)
     # 取得した株価データをデータベースに挿入
-    insert_data_to_pg.func_insert_stock_data_into_table(return_json, connection)
+    insert_data_to_pg.func_insert_stock_data_into_table(
+        return_json, connection)
 
 
-def execute_tasks_in_loop(account_instance, code_list, connection, interval=0.1, max_workers=10):
+def execute_tasks_in_loop(
+        account_instance,
+        code_list,
+        connection,
+        interval=0.1,
+        max_workers=10):
     """
     タスクを定期的に実行する関数
 
@@ -102,7 +110,11 @@ def execute_tasks_in_loop(account_instance, code_list, connection, interval=0.1,
         while time.localtime().tm_hour < 15:
             start_time = time.time()
             # execute_tasksを非同期に実行
-            executor.submit(execute_task, account_instance, code_list, connection)
+            executor.submit(
+                execute_task,
+                account_instance,
+                code_list,
+                connection)
             # 次のタスクがinterval秒後に開始されるように調整
             elapsed_time = time.time() - start_time
             time_to_wait = interval - elapsed_time
@@ -140,7 +152,8 @@ def main():
         # PostgreSQLに接続
         with psycopg2.connect(**db_params) as connection:
             # コードリストを取得
-            code_list = target_code.get_codes_by_api_id_value(os.environ.get('TACHIBANA_USERID'), connection)
+            code_list = target_code.get_codes_by_api_id_value(
+                os.environ.get('TACHIBANA_USERID'), connection)
 
             # マルチプロセスでタスクを実行
             execute_tasks_in_loop(account_instance, code_list, connection)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ファイル説明:
 このPythonスクリプトは、東証から株価データをダウンロードして整形し、PostgreSQLデータベースに挿入する機能を提供します。
@@ -79,7 +80,8 @@ def preprocess_data(df):
     df["市場・商品区分"] = df["市場・商品区分"].replace(replacement_dict)
 
     # 銘柄名の中身の全角英数字と全角空白を半角英数字に置換します
-    df["銘柄名"] = df["銘柄名"].apply(lambda x: jaconv.z2h(x, kana=False, digit=True, ascii=True))
+    df["銘柄名"] = df["銘柄名"].apply(lambda x: jaconv.z2h(
+        x, kana=False, digit=True, ascii=True))
     df.replace({"-": None}, inplace=True)
 
     # カラム名の英訳を定義します
@@ -96,7 +98,8 @@ def preprocess_data(df):
     }
 
     # カラム名を英訳に変更し、スネークケースに変換します
-    df.rename(columns={col: column_translation.get(col, col.lower().replace("・", "_").replace(" ", "_")) for col in df.columns}, inplace=True)
+    df.rename(columns={col: column_translation.get(col, col.lower().replace(
+        "・", "_").replace(" ", "_")) for col in df.columns}, inplace=True)
 
     print("データを整形しました")
     return df
@@ -193,13 +196,15 @@ def parse_html_to_dataframe(html_content):
     # 0番目のテーブルを選択し、必要な列を抽出
 
     # 列名を指定して変更
-    df = df.rename(columns={'ｺｰﾄﾞ': 'code', '銘柄': 'name', '市場': 'market_product_category'})
+    df = df.rename(columns={'ｺｰﾄﾞ': 'code', '銘柄': 'name',
+                   '市場': 'market_product_category'})
 
     # 条件に合致する行の抽出と文字列の置換
     df = df[df['market_product_category'].str.startswith('東')]
 
     # "市場"列の文字列から"東"を削除
-    df['market_product_category'] = df['market_product_category'].str.replace('東', '', regex=False)
+    df['market_product_category'] = df['market_product_category'].str.replace(
+        '東', '', regex=False)
 
     # 'name'列に"(中止)"を含まない行だけを残す
     df = df[~df['name'].str.contains('中止')]

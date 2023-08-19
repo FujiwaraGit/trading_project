@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+スケジューラを使用して定期的なバッチ処理を実行するスクリプト
+
+このスクリプトは、scheduleライブラリを使用して指定された時刻にバッチ処理スクリプトを実行します。
+ita_insert_batch.pyとcode_list_batch.pyというバッチ処理スクリプトを、それぞれ朝8時と毎日0時に実行する設定が含まれています。
+"""
+
 # %%
 import schedule
 import subprocess
