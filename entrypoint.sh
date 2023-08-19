@@ -6,13 +6,6 @@ if [ -n "$TZ" ]; then
     echo "$TZ" > /etc/timezone
 fi
 
-# cronジョブを設定
-echo "0 8 * * * /usr/local/bin/python3 /app/main.py" > /etc/cron.d/crontab
-echo "0 0 * * * /usr/local/bin/python3 /app/code_list_batch.py" > /etc/cron.d/crontab
-
-# cronデーモンを起動
-cron
-
 # データベースの起動を待つ処理を追加
 while ! nc -z db 5432; do
     echo "Waiting for the database to start..."
@@ -25,8 +18,8 @@ done
 # /app/code_list_batch.py を実行
 /usr/local/bin/python3 /app/target_code.py
 
-#ファイルの削除
-rm /app/data_j.xls
+#スケジューラを起動
+/usr/local/bin/python3 /app/scheduler.py
 
 # コンテナのメインプロセスを実行
 exec "$@"

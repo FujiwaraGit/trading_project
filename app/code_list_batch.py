@@ -247,13 +247,23 @@ def main():
     # データの取得
     get_jpx_data()
 
+    # ファイルパスを指定
+    file_path = "data_j.xls"
+
     # pandasを使ってxlsファイルを読み込みます
     try:
-        df = pd.read_excel("data_j.xls")
+        df = pd.read_excel(file_path)
 
     except Exception as e:
         print("エラーが発生しました:", e)
         return
+
+    try:
+        # ファイルを削除
+        os.remove(file_path)
+        print(f"{file_path} を削除しました。")
+    except OSError as e:
+        print(f"削除中にエラーが発生しました: {e}")
 
     df = preprocess_data(df)
 

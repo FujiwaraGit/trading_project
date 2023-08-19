@@ -1,0 +1,38 @@
+# %%
+import schedule
+import subprocess
+import time
+
+
+def ita_insert_batch_py():
+    """
+    ita_insert_batch.py を実行する関数
+    """
+    subprocess.run(["/usr/local/bin/python3", "/app/ita_insert_batch.py"])
+
+
+def run_code_list_batch_py():
+    """
+    code_list_batch.py を実行する関数
+    """
+    subprocess.run(["/usr/local/bin/python3", "/app/code_list_batch.py"])
+
+
+def main():
+    """
+    スケジューラを起動するメイン関数
+    """
+    # 朝8時に ita_insert_batch.py を実行するスケジュールを設定
+    schedule.every().day.at("08:00").do(ita_insert_batch_py)
+
+    # 毎日0時に code_list_batch.py を実行するスケジュールを設定
+    schedule.every().day.at("00:00").do(run_code_list_batch_py)
+
+    print("スケジューラを起動します")
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
+if __name__ == "__main__":
+    main()
