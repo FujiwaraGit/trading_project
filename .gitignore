@@ -10,9 +10,9 @@ __pycache__/
 *.egg-info/
 dist/
 build/
-log/code_list_batch.log
-log/insert_ita.log
-log/set_target_code.log
+*/log/code_list_batch.log
+*/log/insert_ita.log
+*/log/set_target_code.log
 
 # Database
 database.db

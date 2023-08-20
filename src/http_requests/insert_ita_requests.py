@@ -190,7 +190,9 @@ def login(tachibana_account):
         work_url = make_url_request(
             True, tachibana_account.url_base, tachibana_account, req_item_list
         )
+        print(work_url)
         response = execute_curl_command(work_url)
+
         json_req = json.loads(response)
     except Exception as error:
         raise error
@@ -239,7 +241,7 @@ def get_stock_data(tachibana_account, code_list):
             False, tachibana_account.price_url, tachibana_account, req_item_list
         )
         response = execute_curl_command(work_url)
-        response_json = json.loads(response.encode('utf-8').decode('unicode-escape'))
+        response_json = json.loads(response)
 
         # データを整形
         return_data = []
@@ -260,38 +262,34 @@ def get_stock_data(tachibana_account, code_list):
 
 
 def login_and_get_account_instance():
-    try:
-        URL_BASE = "https://demo-kabuka.e-shiten.jp/e_api_v4r3/"
-        MY_USERID = os.environ.get('TACHIBANA_USERID')
-        MY_PASSWORD = os.environ.get('TACHIBANA_PASSWORD')
-        MY_PASSWORD2 = os.environ.get('TACHIBANA_PASSWORD2')
+    URL_BASE = "https://demo-kabuka.e-shiten.jp/e_api_v4r3/"
+    MY_USERID = os.environ.get('TACHIBANA_USERID')
+    MY_PASSWORD = os.environ.get('TACHIBANA_PASSWORD')
+    MY_PASSWORD2 = os.environ.get('TACHIBANA_PASSWORD2')
 
-        tachibana_account = ClassTachibanaAccount(
-            json_fmt='"4"',
-            url_base=URL_BASE,
-            user_id=MY_USERID,
-            password=MY_PASSWORD,
-            password_sec=MY_PASSWORD2,
-        )  # 立花証券口座インスタンス
+    tachibana_account = ClassTachibanaAccount(
+        json_fmt='"4"',
+        url_base=URL_BASE,
+        user_id=MY_USERID,
+        password=MY_PASSWORD,
+        password_sec=MY_PASSWORD2,
+    )  # 立花証券口座インスタンス
 
-        json_response = login(tachibana_account)  # ログイン処理を実施
+    json_response = login(tachibana_account)  # ログイン処理を実施
 
-        # ログインエラーの場合
-        if not (int(json_response.get("p_errno")) == 0 and len(json_response.get("sUrlEvent")) > 0):
-            raise Exception("login error")
+    # ログインエラーの場合
+    if not (int(json_response.get("p_errno")) == 0 and len(json_response.get("sUrlEvent")) > 0):
+        raise Exception("login error")
 
-        # 取得した値を口座属性クラスに設定
-        tachibana_account.set_property(
-            request_url=json_response.get("sUrlRequest"),
-            event_url=json_response.get("sUrlEvent"),
-            tax_category=json_response.get("sZyoutoekiKazeiC"),
-            master_url=json_response.get("sUrlMaster"),
-            price_url=json_response.get("sUrlPrice"),
-        )
-        print("tachibana_login_sucsess")
-
-    except Exception as error:
-        raise error
+    # 取得した値を口座属性クラスに設定
+    tachibana_account.set_property(
+        request_url=json_response.get("sUrlRequest"),
+        event_url=json_response.get("sUrlEvent"),
+        tax_category=json_response.get("sZyoutoekiKazeiC"),
+        master_url=json_response.get("sUrlMaster"),
+        price_url=json_response.get("sUrlPrice"),
+    )
+    print("tachibana_login_sucsess")
 
     return tachibana_account
 
