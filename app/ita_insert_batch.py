@@ -44,9 +44,14 @@ import insert_data_to_pg
 import target_code
 import utility
 
+
 # ログ設定
+LOG_FILENAME = '/app/log/insert_ita.log'
+if not os.path.exists(LOG_FILENAME):
+    open(LOG_FILENAME, 'w', encoding='utf-8')  # ファイルが存在しない場合、空のファイルを作成
+
 logging.basicConfig(
-    filename='/app/log/insert_ita.log',  # ログをファイルに保存する場合
+    filename=LOG_FILENAME,   # ファイル名を指定
     level=logging.DEBUG,     # 出力レベルを設定
     format='%(asctime)s - %(levelname)s - %(message)s'
 )

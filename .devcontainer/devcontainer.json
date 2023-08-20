@@ -11,16 +11,49 @@
 		"mtxr.sqltools-driver-pg"
 	],
 	"settings": {
-		"terminal.integrated.shell.linux": "/bin/bash",
-		"python.linting.enabled": true,
+		"files.trimTrailingWhitespace": true,
+		"files.insertFinalNewline": true,
 		"python.linting.lintOnSave": true,
-		"python.linting.pylintEnabled": false,
+		"[python]": {
+			"editor.insertSpaces": true,
+			"editor.detectIndentation": true,
+			"editor.tabSize": 4
+		},
+		"python.pythonPath": "/Users/home/.pyenv/shims/python3",
+		"files.autoSave": "onFocusChange",
+		"editor.fontFamily": "Ricty",
+		"python.linting.pep8Enabled": false,
+		"python.linting.mypyEnabled": true,
 		"python.linting.flake8Enabled": true,
 		"python.linting.flake8Args": [
-			"--max-line-length=150",
-			"--ignore=E203,W503,W504"
+			"--max-line-length=120",
+			"--max-complexity",
+			"20"
 		],
-		"python.formatting.provider": "autopep8"
+		"python.formatting.provider": "autopep8",
+		"python.formatting.autopep8Args": [
+			"--aggressive",
+			"--aggressive",
+			"--ignore",
+			"E70",
+			"--max-line-length",
+			"120",
+		],
+		"python.testing.pytestEnabled": false,
+		"python.testing.nosetestsEnabled": false,
+		"python.testing.unittestEnabled": true,
+		"sqltools.connections": [
+			{
+				"previewLimit": 50,
+				"server": "db",
+				"port": 5432,
+				"driver": "PostgreSQL",
+				"name": "db",
+				"database": "mydatabase",
+				"username": "myuser",
+				"password": "mypassword"
+			}
+		],
 	},
 	"containerEnv": {
 		"devcontainer.localFolder": "${localWorkspaceFolder}",
