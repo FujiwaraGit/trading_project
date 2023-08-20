@@ -12,8 +12,8 @@ while ! nc -z db 5432; do
     sleep 1
 done
 
-# /src/code_list_batch.py を実行
-# /usr/local/bin/python3 /src/code_list_batch.py
+# /src/entry_points/set_target_code_entry.py を実行
+/usr/local/bin/python3 /src/entry_points/set_target_code_entry.py
 
 # /src/set_code_list_entry.py.py を実行
 /usr/local/bin/python3 /src/entry_points/set_code_list_entry.py
