@@ -21,6 +21,7 @@
 """
 
 # %%
+import logging
 import pandas as pd
 import jaconv
 import requests
@@ -28,13 +29,19 @@ import os
 import psycopg2
 from bs4 import BeautifulSoup
 
+# ログ設定
+logging.basicConfig(
+    filename='/app/log/code_list_batch.log',  # ログをファイルに保存する場合
+    level=logging.DEBUG,     # 出力レベルを設定
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+# loggerのインスタンス化
+logger = logging.getLogger(__name__)
+
 
 def get_jpx_data():
     """
     東証から株価データをダウンロードして取得する関数
-
-    Returns:
-    pd.DataFrame: 東証から取得した株価データが格納されたDataFrame
     """
 
     # ダウンロードするファイルのURL
@@ -47,7 +54,8 @@ def get_jpx_data():
     if response.status_code == 200:
         with open("data_j.xls", "wb") as file:
             file.write(response.content)
-            print("ファイルをダウンロードしました。")
+    else:
+        raise Exception("I'm unable to download data from JPX")
 
 
 def preprocess_data(df):
@@ -101,7 +109,8 @@ def preprocess_data(df):
     df.rename(columns={col: column_translation.get(col, col.lower().replace(
         "・", "_").replace(" ", "_")) for col in df.columns}, inplace=True)
 
-    print("データを整形しました")
+    if df is None:
+        raise Exception("There is no data in the DataFrame.")
     return df
 
 
@@ -116,9 +125,6 @@ def insert_data_to_table(df, db_params):
     Returns:
     None
     """
-
-    connection = psycopg2.connect(**db_params)
-    cursor = connection.cursor()
 
     # dfのデータをmaster_stock_tableに挿入します
     insert_query = """
@@ -139,26 +145,28 @@ def insert_data_to_table(df, db_params):
         scale_category = EXCLUDED.scale_category
     """
 
-    for index, row in df.iterrows():
-        data = (
-            row["code"],
-            row["name"],
-            row["market_product_category"],
-            row["sector33_code"],
-            row["sector33_category"],
-            row["sector17_code"],
-            row["sector17_category"],
-            row["scale_code"],
-            row["scale_category"]
-        )
-        cursor.execute(insert_query, data)
+    try:
+        with psycopg2.connect(**db_params) as conn:
+            with conn.cursor() as cursor:
+                for index, row in df.iterrows():
+                    data = (
+                        row["code"],
+                        row["name"],
+                        row["market_product_category"],
+                        row["sector33_code"],
+                        row["sector33_category"],
+                        row["sector17_code"],
+                        row["sector17_category"],
+                        row["scale_code"],
+                        row["scale_category"]
+                    )
+                    cursor.execute(insert_query, data)  # executemanyの代わりにexecuteを使用
+                conn.commit()
+    except (psycopg2.DatabaseError) as error:
+        conn.rollback()
+        raise error
 
-    # データのコミットと接続のクローズ
-    connection.commit()
-    cursor.close()
-    connection.close()
-
-    print("データをmaster_stock_tableに挿入しました。")
+    return
 
 
 def fetch_html_content(url):
@@ -209,8 +217,6 @@ def parse_html_to_dataframe(html_content):
     # 'name'列に"(中止)"を含まない行だけを残す
     df = df[~df['name'].str.contains('中止')]
 
-    print("IPOデータを整形しました")
-
     return df
 
 
@@ -225,32 +231,45 @@ def insert_new_rows_to_database(df, db_params):
     Returns:
     None
     """
-    # PostgreSQLデータベースに接続する
-    connection = psycopg2.connect(**db_params)
-    cursor = connection.cursor()
 
-    # 既存のデータを取得する
-    query = "SELECT code FROM master_stock_table;"
-    cursor.execute(query)
-    existing_codes = [row[0] for row in cursor.fetchall()]
+    try:
+        with psycopg2.connect(**db_params) as conn:
+            with conn.cursor() as cursor:
+                # 既存のデータを取得する
+                select_query = "SELECT code FROM master_stock_table;"
+                cursor.execute(select_query)
+                existing_codes = [row[0] for row in cursor.fetchall()]
 
-    # 新たに挿入する必要のある行を抽出
-    new_rows_to_insert = df.loc[~df['code'].isin(existing_codes)]
+                # 新たに挿入する必要のある行を抽出
+                new_rows_to_insert = df.loc[~df['code'].isin(existing_codes)]
 
-    # 新たな行をmaster_stock_tableに挿入
-    if not new_rows_to_insert.empty:
-        insert_query = "INSERT INTO master_stock_table (code, name, market_product_category) VALUES (%s, %s, %s);"
-        for row in new_rows_to_insert.itertuples(index=False):
-            cursor.execute(insert_query, row)
-
-    # トランザクションをコミットして接続を閉じる
-    connection.commit()
-    connection.close()
+                # 新たな行をmaster_stock_tableに挿入
+                if not new_rows_to_insert.empty:
+                    insert_query = """
+                    INSERT INTO master_stock_table
+                    (code, name, market_product_category)
+                    VALUES ( % s, % s, % s);
+                    """
+                    for row in new_rows_to_insert.itertuples(index=False):
+                        cursor.execute(insert_query, row)
+                conn.commit()
+    except (psycopg2.DatabaseError) as error:
+        conn.rollback()
+        raise error
 
 
 def main():
+    # 開始のログを出力
+    logger.info('start: ' + __name__)
+    print('start: ' + __name__)
+
     # データの取得
-    get_jpx_data()
+    try:
+        get_jpx_data()
+    except Exception as e:
+        print('interrupiton: I cant load the Excel file..' + str(e))
+        logger.error('interrupiton: I cant load the Excel file..' + str(e))
+        return
 
     # ファイルパスを指定
     file_path = "data_j.xls"
@@ -258,21 +277,27 @@ def main():
     # pandasを使ってxlsファイルを読み込みます
     try:
         df = pd.read_excel(file_path)
-
     except Exception as e:
-        print("エラーが発生しました:", e)
+        print('interrupiton: I cant load the Excel file..' + str(e))
+        logger.error('interrupiton: I cant load the Excel file..' + str(e))
         return
 
     try:
         # ファイルを削除
         os.remove(file_path)
-        print(f"{file_path} を削除しました。")
     except OSError as e:
-        print(f"削除中にエラーが発生しました: {e}")
+        print(f"interrupiton:An error occurred while deleting the file.: {e}")
+        logger.error(f"interrupiton:An error occurred while deleting the file.: {e}")
+        return
 
-    df = preprocess_data(df)
+    try:
+        df = preprocess_data(df)
+    except Exception as e:
+        print(f"interrupiton:An error occurred while edditing df.: {e}")
+        logger.error(f"interrupiton:An error occurred while edditing df.: {e}")
+        return
 
-    if df is not None:
+    try:
         # PostgreSQLの接続情報を環境変数から取得
         db_params = {
             "host": os.environ.get("POSTGRES_HOST"),
@@ -284,10 +309,26 @@ def main():
         # データをテーブルに挿入
         insert_data_to_table(df, db_params)
 
+    except Exception as e:
+        print(f"interrupiton:An error occurred while inserting data into the database..: {e}")
+        logger.error(f"interrupiton:An error occurred while inserting data into the database..: {e}")
+        return
+
+    try:
         url = "https://c-eye.co.jp/ipo-list"
         html_content = fetch_html_content(url)
         df = parse_html_to_dataframe(html_content)
         insert_new_rows_to_database(df, db_params)
+    except Exception as e:
+        print(f"An error occurred during the processing of the IPO list..: {e}")
+        logger.error(f"An error occurred during the processing of the IPO list..: {e}")
+        return
+
+    # 正常終了
+    print('completion: All processes have terminated successfully.')
+    logger.info('completion: All processes have terminated successfully.')
+
+    return
 
 
 if __name__ == "__main__":

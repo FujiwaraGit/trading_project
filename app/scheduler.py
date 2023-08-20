@@ -7,9 +7,9 @@ ita_insert_batch.pyとcode_list_batch.pyというバッチ処理スクリプト�
 """
 
 # %%
-import schedule
-import subprocess
 import time
+import subprocess
+import schedule
 
 
 def ita_insert_batch_py():
