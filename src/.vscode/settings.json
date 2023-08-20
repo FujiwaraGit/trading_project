@@ -10,6 +10,17 @@
     "python.pythonPath": "/usr/local/bin/python",
     "files.autoSave": "onFocusChange",
     "editor.fontFamily": "Ricty",
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [
+        "--disable",
+        "C0111,C0103",
+        "--indent-string=\"  \"",
+        "--indent-after-paren=\"  \"",
+        "--extension-pkg-whitelist",
+        "numpy",
+        "--generated-members",
+        "torch.*"
+    ],
     "python.linting.pep8Enabled": false,
     "python.linting.mypyEnabled": true,
     "python.linting.flake8Enabled": true,
@@ -42,4 +53,5 @@
             "password": "mypassword"
         }
     ],
+    "python.linting.enabled": true,
 }

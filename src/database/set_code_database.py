@@ -91,4 +91,3 @@ def insert_rows_to_database(db_params, data):
     VALUES (%s, %s, %s);
     """
     execute_query(db_params, insert_query, data)
-

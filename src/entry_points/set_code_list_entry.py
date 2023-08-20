@@ -101,6 +101,7 @@ def main():
         # 予期しないその他のエラーが発生した場合
         handle_log(logger, f"An unexpected error occurred: {general_exception}")
 
+
 if __name__ == "__main__":
     main()
 

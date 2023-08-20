@@ -28,7 +28,7 @@ import datetime
 import json
 import pytz
 import os
-import utility
+from utilities.utility import func_execute_curl_command, convert_empty_string_to_none
 
 
 class ClassTachibanaAccount:
@@ -190,7 +190,7 @@ def func_login(tachibana_account):
         work_url = func_make_url_request(
             True, tachibana_account.url_base, tachibana_account, req_item_list
         )
-        response = utility.func_execute_curl_command(work_url)
+        response = func_execute_curl_command(work_url)
         json_req = json.loads(response)
     except Exception as error:
         raise error
@@ -238,13 +238,13 @@ def func_get_stock_data(tachibana_account, code_list):
         work_url = func_make_url_request(
             False, tachibana_account.price_url, tachibana_account, req_item_list
         )
-        response = utility.func_execute_curl_command(work_url)
+        response = func_execute_curl_command(work_url)
         response_json = json.loads(response)
 
         # データを整形
         return_data = []
         for item in response_json["aCLMMfdsMarketPrice"]:
-            item = utility.convert_empty_string_to_none(item)
+            item = convert_empty_string_to_none(item)
             datetime_str = response_json["p_rv_date"].replace(' ', '').replace('.', '-', 1).replace('.', '-', 1)
             datetime_obj = datetime.datetime.strptime(datetime_str, '%Y-%m-%d-%H:%M:%S.%f')
             item.update({'created_at': datetime_obj})
