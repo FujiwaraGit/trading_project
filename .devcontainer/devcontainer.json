@@ -2,7 +2,7 @@
 	"name": "Python Development",
 	"dockerComposeFile": "../docker-compose.yml",
 	"service": "python",
-	"workspaceFolder": "/app",
+	"workspaceFolder": "/src",
 	"extensions": [
 		"ms-python.python",
 		"ms-toolsai.jupyter",

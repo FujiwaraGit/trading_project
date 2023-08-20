@@ -1,4 +1,3 @@
-
 """
 株価データを取得してPostgreSQLデータベースに保存するプログラム
 
@@ -20,7 +19,7 @@
 - プログラム実行前に、環境変数からAPIアカウント情報とPostgreSQL接続情報をセットアップしてください。
 - データベースにはあらかじめita_tableというテーブルを作成しておく必要があります。
 - データベースの接続情報はdb_params変数で指定します。
-- APIアカウント情報はget_tachibana_api.pyで指定します。
+- APIアカウント情報はinsert_ita_api.pyで指定します。
 - 取得したい株価データの銘柄コードリストはtarget_code.pyで指定します。
 
 実行方法:
@@ -39,21 +38,19 @@ import time
 import logging
 import concurrent.futures
 import psycopg2
-import get_tachibana_api
-import insert_data_to_pg
-import target_code
-import utility
-
+from database import insert_ita_database
+from utilities import utility
+from logic import target_code_entry
 
 # ログ設定
-LOG_FILENAME = '/app/log/insert_ita.log'
+LOG_FILENAME = "/app/log/insert_ita.log"
 if not os.path.exists(LOG_FILENAME):
-    open(LOG_FILENAME, 'w', encoding='utf-8')  # ファイルが存在しない場合、空のファイルを作成
+    open(LOG_FILENAME, "w", encoding="utf-8")  # ファイルが存在しない場合、空のファイルを作成
 
 logging.basicConfig(
-    filename=LOG_FILENAME,   # ファイル名を指定
-    level=logging.DEBUG,     # 出力レベルを設定
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    filename=LOG_FILENAME,  # ファイル名を指定
+    level=logging.DEBUG,  # 出力レベルを設定
+    format="%(asctime)s - %(levelname)s - %(message)s",
 )
 # loggerのインスタンス化
 logger = logging.getLogger(__name__)
@@ -83,19 +80,14 @@ def execute_task(account_instance, code_list, connection):
         None
     """
     # 証券コードに対応する株価データを取得
-    return_json = get_tachibana_api.func_get_stock_data(
-        account_instance, code_list)
+    return_json = insert_ita_api.func_get_stock_data(account_instance, code_list)
     # 取得した株価データをデータベースに挿入
-    insert_data_to_pg.func_insert_stock_data_into_table(
-        return_json, connection)
+    insert_ita_database.func_insert_stock_data_into_table(return_json, connection)
 
 
 def execute_tasks_in_loop(
-        account_instance,
-        code_list,
-        connection,
-        interval=0.1,
-        max_workers=10):
+    account_instance, code_list, connection, interval=0.1, max_workers=10
+):
     """
     タスクを定期的に実行する関数
 
@@ -115,11 +107,7 @@ def execute_tasks_in_loop(
         while time.localtime().tm_hour < 15:
             start_time = time.time()
             # execute_tasksを非同期に実行
-            executor.submit(
-                execute_task,
-                account_instance,
-                code_list,
-                connection)
+            executor.submit(execute_task, account_instance, code_list, connection)
             # 次のタスクがinterval秒後に開始されるように調整
             elapsed_time = time.time() - start_time
             time_to_wait = interval - elapsed_time
@@ -141,24 +129,25 @@ def main():
     """
 
     # 開始のログを出力
-    logger.info('start: ' + __name__)
-    print('start: ' + __name__)
+    logger.info("start: " + __name__)
+    print("start: " + __name__)
 
     # 本日休日なら終了
-    if(utility.is_today_holiday() is True):
-        print('completion: Closed due to a holiday.')
-        logger.info('completion: Closed due to a holiday.')
+    if utility.is_today_holiday() is True:
+        print("completion: Closed due to a holiday.")
+        logger.info("completion: Closed due to a holiday.")
         return
 
     try:
         # ログインを行い、アカウントのインスタンスを作成
-        account_instance = get_tachibana_api.func_login_and_get_account_instance()
+        account_instance = insert_ita_api.func_login_and_get_account_instance()
 
         # PostgreSQLに接続
         with psycopg2.connect(**db_params) as connection:
             # コードリストを取得
-            code_list = target_code.get_codes_by_api_id_value(
-                os.environ.get('TACHIBANA_USERID'), connection)
+            code_list = target_code_entry.get_codes_by_api_id_value(
+                os.environ.get("TACHIBANA_USERID"), connection
+            )
 
             # マルチプロセスでタスクを実行
             execute_tasks_in_loop(account_instance, code_list, connection)
@@ -171,11 +160,11 @@ def main():
         return
 
     # 15時になったら正常終了
-    print('completion: market closure.')
-    logger.info('completion: market closure.')
+    print("completion: market closure.")
+    logger.info("completion: market closure.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
 
 # %%

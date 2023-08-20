@@ -4,7 +4,7 @@ services:
   python:
     build: .
     volumes:
-      - ./app:/app # ローカルのappディレクトリをコンテナ内の/appにマウント
+      - ./src:/src # ローカルのsrcディレクトリをコンテナ内の/srcにマウント
     env_file:
       - .env # .envファイルから環境変数を読み込む
     environment:
@@ -12,6 +12,7 @@ services:
       - TACHIBANA_USERID=fps04170
       - TACHIBANA_PASSWORD=1997805d
       - TACHIBANA_PASSWORD2=1381
+      - PYTHONPATH=/src # Pythonのモジュール検索パスに/srcを追加
     depends_on:
       - db # コンテナ起動前にdbサービスが起動するのを待機
     command: sleep infinity # コンテナが停止しないように無限ループで待機

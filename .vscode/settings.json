@@ -42,4 +42,9 @@
             "password": "mypassword"
         }
     ],
+    "files.exclude": {
+        "__pycache__": true,
+        ".mypy_cache": true
+    },
+    "explorer.fileNesting.expand": true,
 }

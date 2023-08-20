@@ -9,6 +9,7 @@ import datetime
 import subprocess
 import urllib.parse
 import holidays
+import logging
 
 
 def convert_empty_string_to_none(item):
@@ -123,4 +124,21 @@ def func_execute_curl_command(url):
         return result.stdout
     else:
         raise Exception(result.stderr)
+
+
+def handle_log(logger, message, log_level=logging.ERROR):
+    """
+    メッセージを出力し、ログに記録する関数
+
+    Args:
+    logger (logging.Logger): ロガーインスタンス
+    message (str): メッセージ
+    log_level (int): ログレベル (デフォルトは logging.INFO)
+
+    Returns:
+    None
+    """
+    print(message)
+    logger.log(log_level, message)
+
 # %%

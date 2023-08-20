@@ -1,8 +1,8 @@
 # 公式のPython 3.14イメージをベースに使用
 FROM python:3.11.4
 
-# コンテナ内の作業ディレクトリを/appに設定
-WORKDIR /app
+# コンテナ内の作業ディレクトリを/srcに設定
+WORKDIR /src
 
 # PostgreSQLクライアントとlibpq-devをインストール
 RUN apt-get update \
@@ -10,7 +10,7 @@ RUN apt-get update \
     && apt-get install -y netcat-openbsd \
     && apt-get install -y postgresql-client libpq-dev
 
-# requirements.txtファイルを現在のディレクトリからコンテナの/appディレクトリにコピー
+# requirements.txtファイルを現在のディレクトリからコンテナの/srcディレクトリにコピー
 COPY requirements.txt .
 
 # pipを最新バージョンにアップグレード
