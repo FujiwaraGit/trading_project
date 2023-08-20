@@ -29,7 +29,7 @@ import logging
 import requests
 import pandas as pd
 import psycopg2
-from logic.set_code_logic import make_jpx_df, insert_jpx_to_db, make_ipo_df, update_ipo_to_db
+from logic.set_code_logic import make_jpx_df, update_jpx_to_db, make_ipo_df, insert_ipo_to_db
 from log.logging_config import configure_logging
 from utilities.utility import handle_log
 
@@ -48,7 +48,7 @@ def main():
 
     try:
         # JPXデータの取得と処理
-        df = make_jpx_df()
+        df_jpx = make_jpx_df()
 
         # PostgreSQLの接続情報を環境変数から取得
         db_params = {
@@ -59,37 +59,47 @@ def main():
         }
 
         # データをデータベースに挿入
-        insert_jpx_to_db(db_params, df)
+        update_jpx_to_db(db_params, df_jpx)
 
         # IPOデータを取得してデータベースに挿入
-        df = make_ipo_df()
-        update_ipo_to_db(db_params, df)
+        df_ipo = make_ipo_df()
+
+        insert_ipo_to_db(db_params, df_ipo)
 
         # 正常終了ログを出力
         handle_log(logger, "completion: All processes have terminated successfully.", logging.INFO)
 
     # エラーハンドリング
     except requests.exceptions.Timeout as e:
+        # リクエストがタイムアウトした場合
         handle_log(logger, f"Request timed out: {e}")
     except requests.exceptions.ConnectionError as e:
+        # 接続エラーが発生した場合
         handle_log(logger, f"Connection error occurred: {e}")
     except requests.exceptions.HTTPError as http_error:
+        # HTTPエラーが発生した場合
         handle_log(logger, f"An HTTP error occurred: {http_error}")
     except requests.exceptions.RequestException as request_error:
+        # リクエストエラーが発生した場合
         handle_log(logger, f"An error occurred during download: {request_error}")
     except FileNotFoundError as file_not_found:
+        # ファイルが見つからない場合
         handle_log(logger, f"File not found: {file_not_found}")
     except pd.errors.ParserError as parser_error:
+        # Excelファイルの解析エラーが発生した場合
         handle_log(logger, f"Error parsing Excel file: {parser_error}")
     except OSError as os_error:
+        # OS関連のエラーが発生した場合
         handle_log(logger, f"Error during file deletion: {os_error}")
     except ValueError as value_error:
+        # 値の処理に関するエラーが発生した場合
         handle_log(logger, f"Value error occurred: {value_error}")
     except psycopg2.DatabaseError as db_error:
+        # データベース関連のエラーが発生した場合
         handle_log(logger, f"An error occurred in the database: {db_error}")
     except Exception as general_exception:
+        # 予期しないその他のエラーが発生した場合
         handle_log(logger, f"An unexpected error occurred: {general_exception}")
-
 
 if __name__ == "__main__":
     main()

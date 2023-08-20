@@ -90,25 +90,18 @@ def make_jpx_df():
     return df
 
 
-def insert_jpx_to_db(db_params, df):
+def update_jpx_to_db(df, db_params):
     """
-    株価データをデータベースに挿入する関数
+    IPOデータをデータベースに更新する関数
 
     Args:
+        df (pd.DataFrame): 更新するIPOデータが格納されたDataFrame
         db_params (dict): データベースへの接続情報が格納された辞書
-        df (pd.DataFrame): 挿入する株価データが格納されたDataFrame
 
     Returns:
         None
     """
-    existing_codes = select_existing_codes(db_params)
-
-    new_rows_to_insert = df.loc[~df["code"].isin(existing_codes)]
-
-    if not new_rows_to_insert.empty:
-        for _, row in new_rows_to_insert.iterrows():
-            data = (row["code"], row["name"], row["market_product_category"])
-            insert_rows_to_database(db_params, data)
+    update_rows_on_database(df, db_params)
 
 
 def make_ipo_df():
@@ -149,15 +142,22 @@ def make_ipo_df():
     return df
 
 
-def update_ipo_to_db(df, db_params):
+def insert_ipo_to_db(db_params, df):
     """
-    IPOデータをデータベースに更新する関数
+    株価データをデータベースに挿入する関数
 
     Args:
-        df (pd.DataFrame): 更新するIPOデータが格納されたDataFrame
         db_params (dict): データベースへの接続情報が格納された辞書
+        df (pd.DataFrame): 挿入する株価データが格納されたDataFrame
 
     Returns:
         None
     """
-    update_rows_on_database(df, db_params)
+    existing_codes = select_existing_codes(db_params)
+
+    new_rows_to_insert = df.loc[~df["code"].isin(existing_codes)]
+
+    if not new_rows_to_insert.empty:
+        for _, row in new_rows_to_insert.iterrows():
+            data = (row["code"], row["name"], row["market_product_category"])
+            insert_rows_to_database(db_params, data)

@@ -8,46 +8,10 @@
 - update_rows_on_database(df, db_params): リアルタイムの株価データをデータベースのテーブルにInsertかUpdateする関数
 """
 
-import psycopg2
 from database.db_connector import execute_query
 
 
-def select_existing_codes(db_params):
-    """
-    データベースから既存の銘柄コードを選択する関数
-
-    Args:
-        db_params (dict): データベースへの接続情報が格納された辞書
-
-    Returns:
-        list: 既存の銘柄コードが格納されたリスト
-    """
-    select_query = "SELECT code FROM master_stock_table;"
-    existing_codes = execute_query(db_params, select_query, fetch=True)
-    existing_codes = [row[0] for row in existing_codes]
-    return existing_codes
-
-
-def insert_rows_to_database(db_params, data):
-    """
-    データベースに新しい行を挿入する関数
-
-    Args:
-        db_params (dict): データベースへの接続情報が格納された辞書
-        data (tuple): 挿入するデータが格納されたタプル
-
-    Returns:
-        None
-    """
-    insert_query = """
-    INSERT INTO master_stock_table
-    (code, name, market_product_category)
-    VALUES (%s, %s, %s);
-    """
-    execute_query(db_params, insert_query, data)
-
-
-def update_rows_on_database(df, db_params):
+def update_rows_on_database(db_params, df):
     """
     リアルタイムの株価データをデータベースのテーブルにInsertかUpdateする関数
 
@@ -77,25 +41,54 @@ def update_rows_on_database(df, db_params):
         scale_category = EXCLUDED.scale_category
     """
 
-    try:
-        with psycopg2.connect(**db_params) as conn:
-            with conn.cursor() as cursor:
-                for _, row in df.iterrows():
-                    data = (
-                        row["code"],
-                        row["name"],
-                        row["market_product_category"],
-                        row["sector33_code"],
-                        row["sector33_category"],
-                        row["sector17_code"],
-                        row["sector17_category"],
-                        row["scale_code"],
-                        row["scale_category"],
-                    )
-                    cursor.execute(insert_query, data)  # executemanyの代わりにexecuteを使用
-                conn.commit()
-    except psycopg2.DatabaseError as e:
-        conn.rollback()
-        raise e
+    for _, row in df.iterrows():
+        data = (
+            row["code"],
+            row["name"],
+            row["market_product_category"],
+            row["sector33_code"],
+            row["sector33_category"],
+            row["sector17_code"],
+            row["sector17_category"],
+            row["scale_code"],
+            row["scale_category"],
+        )
+        execute_query(db_params, insert_query, data)
 
     return
+
+
+def select_existing_codes(db_params):
+    """
+    データベースから既存の銘柄コードを選択する関数
+
+    Args:
+        db_params (dict): データベースへの接続情報が格納された辞書
+
+    Returns:
+        list: 既存の銘柄コードが格納されたリスト
+    """
+    select_query = "SELECT code FROM master_stock_table;"
+    existing_codes = execute_query(db_params, select_query, fetch=True)
+    return_codes = [row[0] for row in existing_codes]
+    return return_codes
+
+
+def insert_rows_to_database(db_params, data):
+    """
+    データベースに新しい行を挿入する関数
+
+    Args:
+        db_params (dict): データベースへの接続情報が格納された辞書
+        data (tuple): 挿入するデータが格納されたタプル
+
+    Returns:
+        None
+    """
+    insert_query = """
+    INSERT INTO master_stock_table
+    (code, name, market_product_category)
+    VALUES (%s, %s, %s);
+    """
+    execute_query(db_params, insert_query, data)
+
