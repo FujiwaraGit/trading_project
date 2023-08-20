@@ -13,7 +13,7 @@ import os
 import jaconv
 import pandas as pd
 from bs4 import BeautifulSoup
-from requsets.set_code_requests import get_jpx_data, get_ipo_data
+from http_requests.set_code_requests import get_jpx_data, get_ipo_data
 from database.set_code_database import select_existing_codes, insert_rows_to_database, update_rows_on_database
 
 
