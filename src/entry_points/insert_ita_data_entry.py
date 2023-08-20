@@ -64,114 +64,73 @@ def main():
         handle_log(logger, "completion: Closed due to a holiday.", logging.INFO)
         return
 
-    # try:
-    #     # PostgreSQLの接続情報を環境変数から取得
-    #     db_params = {
-    #         "host": os.environ.get("POSTGRES_HOST"),
-    #         "database": os.environ.get("POSTGRES_DB"),
-    #         "user": os.environ.get("POSTGRES_USER"),
-    #         "password": os.environ.get("POSTGRES_PASSWORD"),
-    #     }
+    try:
+        # PostgreSQLの接続情報を環境変数から取得
+        db_params = {
+            "host": os.environ.get("POSTGRES_HOST"),
+            "database": os.environ.get("POSTGRES_DB"),
+            "user": os.environ.get("POSTGRES_USER"),
+            "password": os.environ.get("POSTGRES_PASSWORD"),
+        }
 
-    #     # ログインを行い、アカウントのインスタンスを作成
-    #     account_instance = login_and_get_account_instance()
+        # ログインを行い、アカウントのインスタンスを作成
+        account_instance = login_and_get_account_instance()
 
-    #     # コードリストを取得
-    #     code_list = get_target_code_list(db_params, os.environ.get("TACHIBANA_USERID"))
+        # コードリストを取得
+        code_list = get_target_code_list(db_params, os.environ.get("TACHIBANA_USERID"))
 
-    #     # タスク実行の間隔（秒）
-    #     interval = 0.1
-    #     # 最大の並行タスク数
-    #     max_workers = 10
+        # タスク実行の間隔（秒）
+        interval = 0.1
+        # 最大の並行タスク数
+        max_workers = 10
 
-    #     # ThreadPoolExecutorを作成
-    #     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-    #         # 15時までのループを開始
-    #         while time.localtime().tm_hour < 15:
+        # ThreadPoolExecutorを作成
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # 15時までのループを開始
+            while time.localtime().tm_hour < 15:
 
-    #             start_time = time.time()
-    #             # execute_tasksを非同期に実行
-    #             executor.submit(execute_task, account_instance, code_list, db_params)
+                start_time = time.time()
+                # execute_tasksを非同期に実行
+                executor.submit(execute_task, account_instance, code_list, db_params)
 
-    #             # 次のタスクがinterval秒後に開始されるように調整
-    #             elapsed_time = time.time() - start_time
-    #             time_to_wait = interval - elapsed_time
+                # 次のタスクがinterval秒後に開始されるように調整
+                elapsed_time = time.time() - start_time
+                time_to_wait = interval - elapsed_time
 
-    #             if time_to_wait > 0:
-    #                 time.sleep(time_to_wait)
+                if time_to_wait > 0:
+                    time.sleep(time_to_wait)
 
-    #         # 15時になったら最後の1回だけタスクを実行
-    #         executor.submit(execute_task, account_instance, code_list, db_params)
-    #         # ログを表示
-    #         handle_log(logger, "completion: market closure.", logging.INFO)
-    #         return
-    # # エラーハンドリング
-    # except requests.exceptions.Timeout as e:
-    #     # リクエストがタイムアウトした場合
-    #     handle_log(logger, f"Request timed out: {e}")
-    # except requests.exceptions.ConnectionError as e:
-    #     # 接続エラーが発生した場合
-    #     handle_log(logger, f"Connection error occurred: {e}")
-    # except requests.exceptions.HTTPError as http_error:
-    #     # HTTPエラーが発生した場合
-    #     handle_log(logger, f"An HTTP error occurred: {http_error}")
-    # except requests.exceptions.RequestException as request_error:
-    #     # リクエストエラーが発生した場合
-    #     handle_log(logger, f"An error occurred during download: {request_error}")
-    # except psycopg2.DatabaseError as db_error:
-    #     # データベース関連のエラーが発生した場合
-    #     handle_log(logger, f"An error occurred in the database: {db_error}")
-    # except MissingAPIIdError as missing_api_id_error:
-    #     # API IDが指定されていない場合
-    #     handle_log(logger, f"Missing API ID: {missing_api_id_error}")
-    # except NoMatchingCodeError as no_matching_code_error:
-    #     # 対応するコードが存在しない場合
-    #     handle_log(logger, f"Target code not found : {no_matching_code_error}")
-    # except Exception as general_exception:
-    #     # 予期しないその他のエラーが発生した場合
-    #     handle_log(logger, f"An unexpected error occurred: {general_exception}")
-    # return
-
-    # PostgreSQLの接続情報を環境変数から取得
-    db_params = {
-        "host": os.environ.get("POSTGRES_HOST"),
-        "database": os.environ.get("POSTGRES_DB"),
-        "user": os.environ.get("POSTGRES_USER"),
-        "password": os.environ.get("POSTGRES_PASSWORD"),
-    }
-
-    # ログインを行い、アカウントのインスタンスを作成
-    account_instance = login_and_get_account_instance()
-
-    # コードリストを取得
-    code_list = get_target_code_list(db_params, os.environ.get("TACHIBANA_USERID"))
-
-    # タスク実行の間隔（秒）
-    interval = 0.1
-    # 最大の並行タスク数
-    max_workers = 30
-
-    # ThreadPoolExecutorを作成
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # 15時までのループを開始
-        while time.localtime().tm_hour < 15:
-
-            start_time = time.time()
-            # execute_tasksを非同期に実行
+            # 15時になったら最後の1回だけタスクを実行
             executor.submit(execute_task, account_instance, code_list, db_params)
-
-            # 次のタスクがinterval秒後に開始されるように調整
-            elapsed_time = time.time() - start_time
-            time_to_wait = interval - elapsed_time
-
-            if time_to_wait > 0:
-                time.sleep(time_to_wait)
-
-        # 15時になったら最後の1回だけタスクを実行
-        executor.submit(execute_task, account_instance, code_list, db_params)
-        # ログを表示
-        handle_log(logger, "completion: market closure.", logging.INFO)
-        return
+            # ログを表示
+            handle_log(logger, "completion: market closure.", logging.INFO)
+            return
+    # エラーハンドリング
+    except requests.exceptions.Timeout as e:
+        # リクエストがタイムアウトした場合
+        handle_log(logger, f"Request timed out: {e}")
+    except requests.exceptions.ConnectionError as e:
+        # 接続エラーが発生した場合
+        handle_log(logger, f"Connection error occurred: {e}")
+    except requests.exceptions.HTTPError as http_error:
+        # HTTPエラーが発生した場合
+        handle_log(logger, f"An HTTP error occurred: {http_error}")
+    except requests.exceptions.RequestException as request_error:
+        # リクエストエラーが発生した場合
+        handle_log(logger, f"An error occurred during download: {request_error}")
+    except psycopg2.DatabaseError as db_error:
+        # データベース関連のエラーが発生した場合
+        handle_log(logger, f"An error occurred in the database: {db_error}")
+    except MissingAPIIdError as missing_api_id_error:
+        # API IDが指定されていない場合
+        handle_log(logger, f"Missing API ID: {missing_api_id_error}")
+    except NoMatchingCodeError as no_matching_code_error:
+        # 対応するコードが存在しない場合
+        handle_log(logger, f"Target code not found : {no_matching_code_error}")
+    except Exception as general_exception:
+        # 予期しないその他のエラーが発生した場合
+        handle_log(logger, f"An unexpected error occurred: {general_exception}")
+    return
 
 
 if __name__ == "__main__":
