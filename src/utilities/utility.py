@@ -91,7 +91,7 @@ def is_today_holiday():
     return is_holiday_today
 
 
-def func_execute_curl_command(url):
+def execute_curl_command(url):
     """
     指定されたURLに対してcurlコマンドを実行し、結果を返す関数です。
 

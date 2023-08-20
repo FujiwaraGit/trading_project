@@ -36,88 +36,13 @@ API利用の際は利用規約に従って適切にご利用ください。
 import os
 import time
 import logging
-import concurrent.futures
 import psycopg2
-from database import insert_ita_database
-from utilities import utility
-from logic import target_code_entry
-
-# ログ設定
-LOG_FILENAME = "/app/log/insert_ita.log"
-if not os.path.exists(LOG_FILENAME):
-    open(LOG_FILENAME, "w", encoding="utf-8")  # ファイルが存在しない場合、空のファイルを作成
-
-logging.basicConfig(
-    filename=LOG_FILENAME,  # ファイル名を指定
-    level=logging.DEBUG,  # 出力レベルを設定
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
-# loggerのインスタンス化
-logger = logging.getLogger(__name__)
-
-# PostgreSQLの接続情報を環境変数から取得
-db_params = {
-    "host": os.environ.get("POSTGRES_HOST"),
-    "database": os.environ.get("POSTGRES_DB"),
-    "user": os.environ.get("POSTGRES_USER"),
-    "password": os.environ.get("POSTGRES_PASSWORD"),
-}
-
-
-def execute_task(account_instance, code_list, connection):
-    """
-    タスクを実行する関数
-
-    Args:
-        account_instance (object): アカウントのインスタンス
-            APIにアクセスするためのアカウント情報を持つインスタンスです。
-        code_list (list): 取得するデータリスト
-            取得したい証券コードのリストです。APIからこれらの証券コードに対応する株価データを取得します。
-        connection (psycopg2.Connection): PostgreSQLへの接続情報
-            データをデータベースに保存するためのPostgreSQLの接続情報です。
-
-    Returns:
-        None
-    """
-    # 証券コードに対応する株価データを取得
-    return_json = insert_ita_api.func_get_stock_data(account_instance, code_list)
-    # 取得した株価データをデータベースに挿入
-    insert_ita_database.func_insert_stock_data_into_table(return_json, connection)
-
-
-def execute_tasks_in_loop(
-    account_instance, code_list, connection, interval=0.1, max_workers=10
-):
-    """
-    タスクを定期的に実行する関数
-
-    Args:
-        account_instance (object): アカウントのインスタンス
-        code_list (list): 取得するデータリスト
-        connection (psycopg2.Connection): PostgreSQLへの接続情報
-        interval (float): タスク実行の間隔（秒）
-        max_workers (int): 最大の並行タスク数
-
-    Returns:
-        None
-    """
-    # ThreadPoolExecutorを作成
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # 15時までのループを開始
-        while time.localtime().tm_hour < 15:
-            start_time = time.time()
-            # execute_tasksを非同期に実行
-            executor.submit(execute_task, account_instance, code_list, connection)
-            # 次のタスクがinterval秒後に開始されるように調整
-            elapsed_time = time.time() - start_time
-            time_to_wait = interval - elapsed_time
-
-            if time_to_wait > 0:
-                time.sleep(time_to_wait)
-
-        # 15時になったら最後の1回だけタスクを実行
-        executor.submit(execute_task, account_instance, code_list, connection)
-        return
+import requests
+import concurrent.futures
+from logic.insert_ita_logic import get_target_code_list, login_and_get_account_instance, execute_task
+from log.logging_config import configure_logging
+from utilities.utility import handle_log, is_today_holiday
+from utilities.custom_exceptions import MissingAPIIdError, NoMatchingCodeError
 
 
 def main():
@@ -127,41 +52,126 @@ def main():
     Returns:
         None
     """
+    # ログ設定
+    log_filename = "/src/log/insert_ita.log"
+    logger = configure_logging(log_filename)
 
     # 開始のログを出力
-    logger.info("start: " + __name__)
-    print("start: " + __name__)
+    handle_log(logger, f"start: {__name__}", logging.INFO)
 
     # 本日休日なら終了
-    if utility.is_today_holiday() is True:
-        print("completion: Closed due to a holiday.")
-        logger.info("completion: Closed due to a holiday.")
+    if is_today_holiday() is True:
+        handle_log(logger, "completion: Closed due to a holiday.", logging.INFO)
         return
 
-    try:
-        # ログインを行い、アカウントのインスタンスを作成
-        account_instance = insert_ita_api.func_login_and_get_account_instance()
+    # try:
+    #     # PostgreSQLの接続情報を環境変数から取得
+    #     db_params = {
+    #         "host": os.environ.get("POSTGRES_HOST"),
+    #         "database": os.environ.get("POSTGRES_DB"),
+    #         "user": os.environ.get("POSTGRES_USER"),
+    #         "password": os.environ.get("POSTGRES_PASSWORD"),
+    #     }
 
-        # PostgreSQLに接続
-        with psycopg2.connect(**db_params) as connection:
-            # コードリストを取得
-            code_list = target_code_entry.get_codes_by_api_id_value(
-                os.environ.get("TACHIBANA_USERID"), connection
-            )
+    #     # ログインを行い、アカウントのインスタンスを作成
+    #     account_instance = login_and_get_account_instance()
 
-            # マルチプロセスでタスクを実行
-            execute_tasks_in_loop(account_instance, code_list, connection)
+    #     # コードリストを取得
+    #     code_list = get_target_code_list(db_params, os.environ.get("TACHIBANA_USERID"))
 
-    except Exception as error:
-        # エラーをログに記録
-        logger.error("Interruption: " + str(error))
-        # エラーメッセージをコンソールに表示
-        print("Interruption:", error)
+    #     # タスク実行の間隔（秒）
+    #     interval = 0.1
+    #     # 最大の並行タスク数
+    #     max_workers = 10
+
+    #     # ThreadPoolExecutorを作成
+    #     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+    #         # 15時までのループを開始
+    #         while time.localtime().tm_hour < 15:
+
+    #             start_time = time.time()
+    #             # execute_tasksを非同期に実行
+    #             executor.submit(execute_task, account_instance, code_list, db_params)
+
+    #             # 次のタスクがinterval秒後に開始されるように調整
+    #             elapsed_time = time.time() - start_time
+    #             time_to_wait = interval - elapsed_time
+
+    #             if time_to_wait > 0:
+    #                 time.sleep(time_to_wait)
+
+    #         # 15時になったら最後の1回だけタスクを実行
+    #         executor.submit(execute_task, account_instance, code_list, db_params)
+    #         # ログを表示
+    #         handle_log(logger, "completion: market closure.", logging.INFO)
+    #         return
+    # # エラーハンドリング
+    # except requests.exceptions.Timeout as e:
+    #     # リクエストがタイムアウトした場合
+    #     handle_log(logger, f"Request timed out: {e}")
+    # except requests.exceptions.ConnectionError as e:
+    #     # 接続エラーが発生した場合
+    #     handle_log(logger, f"Connection error occurred: {e}")
+    # except requests.exceptions.HTTPError as http_error:
+    #     # HTTPエラーが発生した場合
+    #     handle_log(logger, f"An HTTP error occurred: {http_error}")
+    # except requests.exceptions.RequestException as request_error:
+    #     # リクエストエラーが発生した場合
+    #     handle_log(logger, f"An error occurred during download: {request_error}")
+    # except psycopg2.DatabaseError as db_error:
+    #     # データベース関連のエラーが発生した場合
+    #     handle_log(logger, f"An error occurred in the database: {db_error}")
+    # except MissingAPIIdError as missing_api_id_error:
+    #     # API IDが指定されていない場合
+    #     handle_log(logger, f"Missing API ID: {missing_api_id_error}")
+    # except NoMatchingCodeError as no_matching_code_error:
+    #     # 対応するコードが存在しない場合
+    #     handle_log(logger, f"Target code not found : {no_matching_code_error}")
+    # except Exception as general_exception:
+    #     # 予期しないその他のエラーが発生した場合
+    #     handle_log(logger, f"An unexpected error occurred: {general_exception}")
+    # return
+
+    # PostgreSQLの接続情報を環境変数から取得
+    db_params = {
+        "host": os.environ.get("POSTGRES_HOST"),
+        "database": os.environ.get("POSTGRES_DB"),
+        "user": os.environ.get("POSTGRES_USER"),
+        "password": os.environ.get("POSTGRES_PASSWORD"),
+    }
+
+    # ログインを行い、アカウントのインスタンスを作成
+    account_instance = login_and_get_account_instance()
+
+    # コードリストを取得
+    code_list = get_target_code_list(db_params, os.environ.get("TACHIBANA_USERID"))
+
+    # タスク実行の間隔（秒）
+    interval = 0.1
+    # 最大の並行タスク数
+    max_workers = 30
+
+    # ThreadPoolExecutorを作成
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # 15時までのループを開始
+        while time.localtime().tm_hour < 15:
+
+            start_time = time.time()
+            # execute_tasksを非同期に実行
+            executor.submit(execute_task, account_instance, code_list, db_params)
+
+            # 次のタスクがinterval秒後に開始されるように調整
+            elapsed_time = time.time() - start_time
+            time_to_wait = interval - elapsed_time
+
+            if time_to_wait > 0:
+                time.sleep(time_to_wait)
+
+        # 15時になったら最後の1回だけタスクを実行
+        executor.submit(execute_task, account_instance, code_list, db_params)
+        # ログを表示
+        handle_log(logger, "completion: market closure.", logging.INFO)
         return
-
-    # 15時になったら正常終了
-    print("completion: market closure.")
-    logger.info("completion: market closure.")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import psycopg2
 
 
-def execute_query(db_params, query, data=None, fetch=False):
+def execute_query(db_params, query, data=None, fetch=False, use_executemany=False):
     """
     データベースに接続してSQLクエリを実行する関数
 
@@ -18,13 +18,16 @@ def execute_query(db_params, query, data=None, fetch=False):
         with psycopg2.connect(**db_params) as conn:
             with conn.cursor() as cursor:
                 if data:
-                    cursor.execute(query, data)
+                    if use_executemany:
+                        cursor.executemany(query, data)
+                    else:
+                        cursor.execute(query, data)
                 else:
                     cursor.execute(query)
                 conn.commit()
                 if fetch:
                     return cursor.fetchall()
+                return
     except psycopg2.DatabaseError as error:
         conn.rollback()
         raise error
-

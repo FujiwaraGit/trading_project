@@ -10,17 +10,17 @@
     - set_property(request_url, event_url, tax_category, master_url, price_url): プロパティを設定するメソッド
 
 ユーティリティ関数の概要:
-- func_check_json_dquat(str_value): JSONの値の前後にダブルクオーテーションがない場合に付ける関数
-- func_p_sd_date(int_systime): "p_sd_date"の書式の文字列としてシステム時刻を返す関数
-- func_make_url_request(auth_flg, url_target, tachibana_account, req_item_list): requestの文字列を作成して返す関数
-- func_login(tachibana_account): ログインを行い、応答データを返す関数
-- func_get_stock_data(tachibana_account, code_list): リアルタイムの株価データを取得する関数
-- func_login_and_get_account_instance(): ログインを行い、立花証券口座クラスのインスタンスを返す関数
+- check_json_dquat(str_value): JSONの値の前後にダブルクオーテーションがない場合に付ける関数
+- p_sd_date(int_systime): "p_sd_date"の書式の文字列としてシステム時刻を返す関数
+- make_url_request(auth_flg, url_target, tachibana_account, req_item_list): requestの文字列を作成して返す関数
+- login(tachibana_account): ログインを行い、応答データを返す関数
+- get_stock_data(tachibana_account, code_list): リアルタイムの株価データを取得する関数
+- login_and_get_account_instance(): ログインを行い、立花証券口座クラスのインスタンスを返す関数
 
 ファイルの使い方:
 1. 環境変数に立花証券のユーザーID(`TACHIBANA_USERID`)とパスワード(`TACHIBANA_PASSWORD`, `TACHIBANA_PASSWORD2`)を設定します。
-2. 立花証券口座クラスのインスタンスを作成します(`func_login_and_get_account_instance()`を使用)。
-3. 株価データを取得したい銘柄コードを指定し、`func_get_stock_data(tachibana_account, code_list)`を使用して株価データを取得します。
+2. 立花証券口座クラスのインスタンスを作成します(`login_and_get_account_instance()`を使用)。
+3. 株価データを取得したい銘柄コードを指定し、`get_stock_data(tachibana_account, code_list)`を使用して株価データを取得します。
 4. 必要に応じて取得した株価データを加工して利用します。
 """
 
@@ -28,7 +28,7 @@ import datetime
 import json
 import pytz
 import os
-from utilities.utility import func_execute_curl_command, convert_empty_string_to_none
+from utilities.utility import execute_curl_command, convert_empty_string_to_none
 
 
 class ClassTachibanaAccount:
@@ -89,7 +89,7 @@ class ClassTachibanaAccount:
         self.tax_category = tax_category
 
 
-def func_check_json_dquat(str_value):
+def check_json_dquat(str_value):
     """
     JSONの値の前後にダブルクオーテーションがない場合に付ける関数
 
@@ -110,7 +110,7 @@ def func_check_json_dquat(str_value):
     return str_value
 
 
-def func_p_sd_date(int_systime):
+def p_sd_date(int_systime):
     """
     "p_sd_date"の書式の文字列としてシステム時刻を返す関数
 
@@ -133,7 +133,7 @@ def func_p_sd_date(int_systime):
     return str_psddate
 
 
-def func_make_url_request(auth_flg, url_target, tachibana_account, req_item_list):
+def make_url_request(auth_flg, url_target, tachibana_account, req_item_list):
     """
     requestの文字列を作成して返す関数
 
@@ -147,7 +147,7 @@ def func_make_url_request(auth_flg, url_target, tachibana_account, req_item_list
         str: 作成されたrequestの文字列
     """
     tachibana_account.int_p_no += 1  # request通番をカウントアップ
-    str_p_sd_date = func_p_sd_date(
+    str_p_sd_date = p_sd_date(
         datetime.datetime.now(pytz.timezone("Asia/Tokyo"))
     )  # システム時刻を所定の書式で取得
     work_url = url_target
@@ -157,19 +157,19 @@ def func_make_url_request(auth_flg, url_target, tachibana_account, req_item_list
     work_url = (
         work_url
         + '"p_no":'
-        + func_check_json_dquat(str(tachibana_account.int_p_no))
+        + check_json_dquat(str(tachibana_account.int_p_no))
         + ","
     )
-    work_url = work_url + '"p_sd_date":' + func_check_json_dquat(str_p_sd_date) + ","
+    work_url = work_url + '"p_sd_date":' + check_json_dquat(str_p_sd_date) + ","
 
     for item in req_item_list:
         if len(item["key"]) > 0:
-            work_url += item["key"] + ":" + func_check_json_dquat(str(item["value"])) + ","
+            work_url += item["key"] + ":" + check_json_dquat(str(item["value"])) + ","
     work_url = work_url[:-2] + '"}'
     return work_url
 
 
-def func_login(tachibana_account):
+def login(tachibana_account):
     """
     ログインを行い、応答データを返す関数
 
@@ -187,10 +187,10 @@ def func_login(tachibana_account):
             {"key": '"sJsonOfmt"', "value": tachibana_account.json_fmt},
         ]
 
-        work_url = func_make_url_request(
+        work_url = make_url_request(
             True, tachibana_account.url_base, tachibana_account, req_item_list
         )
-        response = func_execute_curl_command(work_url)
+        response = execute_curl_command(work_url)
         json_req = json.loads(response)
     except Exception as error:
         raise error
@@ -198,7 +198,7 @@ def func_login(tachibana_account):
     return json_req
 
 
-def func_get_stock_data(tachibana_account, code_list):
+def get_stock_data(tachibana_account, code_list):
     """
     リアルタイムの株価データを取得する関数
 
@@ -235,11 +235,11 @@ def func_get_stock_data(tachibana_account, code_list):
             {"key": '"sJsonOfmt"', "value": tachibana_account.json_fmt},
         ]
 
-        work_url = func_make_url_request(
+        work_url = make_url_request(
             False, tachibana_account.price_url, tachibana_account, req_item_list
         )
-        response = func_execute_curl_command(work_url)
-        response_json = json.loads(response)
+        response = execute_curl_command(work_url)
+        response_json = json.loads(response.encode('utf-8').decode('unicode-escape'))
 
         # データを整形
         return_data = []
@@ -250,15 +250,16 @@ def func_get_stock_data(tachibana_account, code_list):
             item.update({'created_at': datetime_obj})
             return_data.append(item)
     except Exception as error:
+        print(error)
         raise error
 
-    if len(return_data) > 0:
+    if len(return_data) == 0:
         raise Exception("the response ita rows is empty")
 
     return return_data
 
 
-def func_login_and_get_account_instance():
+def login_and_get_account_instance():
     try:
         URL_BASE = "https://demo-kabuka.e-shiten.jp/e_api_v4r3/"
         MY_USERID = os.environ.get('TACHIBANA_USERID')
@@ -273,7 +274,7 @@ def func_login_and_get_account_instance():
             password_sec=MY_PASSWORD2,
         )  # 立花証券口座インスタンス
 
-        json_response = func_login(tachibana_account)  # ログイン処理を実施
+        json_response = login(tachibana_account)  # ログイン処理を実施
 
         # ログインエラーの場合
         if not (int(json_response.get("p_errno")) == 0 and len(json_response.get("sUrlEvent")) > 0):
