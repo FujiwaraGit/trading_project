@@ -16,14 +16,14 @@ def ita_insert_batch_py():
     """
     ita_insert_batch.py を実行する関数
     """
-    subprocess.run(["/usr/local/bin/python3", "/src/entry_points/ita_insert_batch.py"])
+    subprocess.run(["/usr/local/bin/python3", "/home/home/trading_project/src//entry_points/ita_insert_batch.py"])
 
 
 def run_code_list_batch_py():
     """
     code_list_batch.py を実行する関数
     """
-    subprocess.run(["/usr/local/bin/python3", "/src/entry_points/code_list_batch.py"])
+    subprocess.run(["/usr/local/bin/python3", "/home/home/trading_project/src//entry_points/code_list_batch.py"])
 
 
 def main():
