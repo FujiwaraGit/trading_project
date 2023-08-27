@@ -127,3 +127,9 @@
 2023-08-21 03:00:16,629 - DEBUG - Starting new HTTPS connection (1): c-eye.co.jp:443
 2023-08-21 03:00:16,951 - DEBUG - https://c-eye.co.jp:443 "GET /ipo-list HTTP/1.1" 200 11397
 2023-08-21 03:00:17,071 - INFO - completion: All processes have terminated successfully.
+2023-08-28 03:01:31,682 - INFO - start: __main__
+2023-08-28 03:01:31,685 - DEBUG - Starting new HTTPS connection (1): www.jpx.co.jp:443
+2023-08-28 03:01:31,824 - DEBUG - https://www.jpx.co.jp:443 "GET /markets/statistics-equities/misc/tvdivq0000001vg2-att/data_j.xls HTTP/1.1" 200 827392
+2023-08-28 03:01:54,302 - DEBUG - Starting new HTTPS connection (1): c-eye.co.jp:443
+2023-08-28 03:01:54,807 - DEBUG - https://c-eye.co.jp:443 "GET /ipo-list HTTP/1.1" 200 11878
+2023-08-28 03:01:54,906 - INFO - completion: All processes have terminated successfully.
