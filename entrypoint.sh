@@ -18,8 +18,5 @@ done
 # /src/set_code_list_entry.py.py を実行
 /usr/local/bin/python3 /src/entry_points/set_code_list_entry.py
 
-#スケジューラを起動
-/usr/local/bin/python3 /src/scheduler/scheduler.py
-
 # コンテナのメインプロセスを実行
 exec "$@"
